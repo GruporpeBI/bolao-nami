@@ -1,0 +1,43 @@
+export const TEAM_NAMES_PTBR: Record<string, string> = {
+  "Brazil": "Brasil",
+  "Morocco": "Marrocos",
+  "Haiti": "Haiti",
+  "Scotland": "Escócia",
+  "Panama": "Panamá",
+  "Panama national football team": "Panamá",
+  "Egypt": "Egito",
+  "Egypt national football team": "Egito",
+  "Argentina": "Argentina",
+  "France": "França",
+  "Germany": "Alemanha",
+  "Spain": "Espanha",
+  "Portugal": "Portugal",
+  "England": "Inglaterra",
+  "Netherlands": "Holanda",
+  "Belgium": "Bélgica",
+  "Croatia": "Croácia",
+  "Uruguay": "Uruguai",
+  "Colombia": "Colômbia",
+  "Mexico": "México",
+  "Japan": "Japão",
+  "South Korea": "Coreia do Sul",
+  "Senegal": "Senegal",
+  "Nigeria": "Nigéria",
+  "Australia": "Austrália",
+  "Switzerland": "Suíça",
+  "Denmark": "Dinamarca",
+  "United States": "Estados Unidos",
+  "Canada": "Canadá",
+  "Ecuador": "Equador",
+  "Peru": "Peru",
+  "Chile": "Chile",
+  "Venezuela": "Venezuela",
+  "Bolivia": "Bolívia",
+  "Paraguay": "Paraguai",
+  "A definir": "A definir",
+};
+
+export function teamName(name: string): string {
+  if (!name) return name;
+  return TEAM_NAMES_PTBR[name] ?? name;
+}

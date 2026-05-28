@@ -1,0 +1,134 @@
+import { createClient } from "@/lib/supabase/server";
+import { IconEscudo } from "@/components/icons";
+import Badge from "@/components/ui/Badge";
+import GameCard from "./GameCard";
+import TournamentPredictions from "./TournamentPredictions";
+import type { Database } from "@/lib/supabase/types";
+
+type GameRow = Database["public"]["Tables"]["games"]["Row"];
+type PredictionRow = Database["public"]["Tables"]["predictions"]["Row"];
+type TournamentPredRow = Database["public"]["Tables"]["tournament_predictions"]["Row"];
+
+export default async function PalpitesPage() {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const { data: gamesData } = await supabase
+    .from("games")
+    .select("*")
+    .eq("is_enabled", true as unknown as string)
+    .order("scheduled_at", { ascending: true });
+
+  const enabledGames = (gamesData as GameRow[] | null) ?? [];
+
+  let predictions: Record<string, {
+    home_score_pred: number;
+    away_score_pred: number;
+    possession_pred: number;
+  }> = {};
+
+  let tournamentPrediction: TournamentPredRow | null = null;
+  let tournamentDisabled = true;
+
+  if (user) {
+    const gameIds = enabledGames.map((g) => g.id);
+
+    if (gameIds.length > 0) {
+      const { data: predsData } = await supabase
+        .from("predictions")
+        .select("game_id, home_score_pred, away_score_pred, possession_pred")
+        .eq("user_id", user.id)
+        .in("game_id", gameIds);
+
+      for (const p of (predsData as Pick<PredictionRow, "game_id" | "home_score_pred" | "away_score_pred" | "possession_pred">[] | null) ?? []) {
+        predictions[p.game_id] = {
+          home_score_pred: p.home_score_pred,
+          away_score_pred: p.away_score_pred,
+          possession_pred: p.possession_pred,
+        };
+      }
+    }
+
+    const { data: tp } = await supabase
+      .from("tournament_predictions")
+      .select("*")
+      .eq("user_id", user.id)
+      .single();
+
+    tournamentPrediction = (tp as TournamentPredRow | null) ?? null;
+
+    const { data: brazilGamesData } = await supabase
+      .from("games")
+      .select("scheduled_at")
+      .eq("is_brazil_game", true as unknown as string)
+      .order("scheduled_at", { ascending: true });
+
+    const playedCount = ((brazilGamesData as Pick<GameRow, "scheduled_at">[] | null) ?? []).filter(
+      (g) => new Date(g.scheduled_at) <= new Date()
+    ).length;
+
+    tournamentDisabled = playedCount >= 3;
+  }
+
+  return (
+    <main className="min-h-screen bg-[#1A1A1A]">
+      <div className="max-w-3xl mx-auto px-4 py-10">
+        <div className="flex items-center gap-4 mb-10">
+          <IconEscudo width={56} height={95} />
+          <div>
+            <h1 className="text-3xl font-bold text-[#F6C900] uppercase tracking-tight">
+              Meus Palpites
+            </h1>
+            <p className="text-[#FAF6EB]/50 text-sm mt-1">
+              Envie seu palpite até 5 minutos antes de cada jogo
+            </p>
+          </div>
+        </div>
+
+        {!user && (
+          <div className="border border-[#F6C900]/20 rounded-sm px-5 py-4 mb-8 text-[#FAF6EB]/70 text-sm">
+            Faça login para enviar palpites.
+          </div>
+        )}
+
+        {enabledGames.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center gap-4">
+            <Badge variant="dark">Em breve</Badge>
+            <p className="text-[#FAF6EB]/50 text-lg">
+              Nenhum jogo disponível no momento.
+            </p>
+            <p className="text-[#FAF6EB]/30 text-sm">
+              Os jogos serão habilitados pelo administrador.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="flex flex-col gap-4 mb-12">
+              {enabledGames.map((game) => (
+                <GameCard
+                  key={game.id}
+                  game={game}
+                  existingPrediction={predictions[game.id] ?? null}
+                />
+              ))}
+            </div>
+
+            <div className="mb-2">
+              <h2 className="text-xl font-bold text-[#FAF6EB] uppercase tracking-tight mb-1">
+                Palpites do Torneio
+              </h2>
+              <p className="text-[#FAF6EB]/40 text-sm mb-4">
+                Semifinalistas, finalistas e campeão — disponível durante os 3 primeiros jogos do Brasil.
+              </p>
+              <TournamentPredictions
+                disabled={tournamentDisabled || !user}
+                existing={tournamentPrediction}
+              />
+            </div>
+          </>
+        )}
+      </div>
+    </main>
+  );
+}

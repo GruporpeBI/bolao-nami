@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/sync-games",
+      "schedule": "0 4 * * *"
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_URL": "https://yzbsahubleskqbfmvmei.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6YnNhaHVibGVza3FiZm12bWVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3OTU0MjEsImV4cCI6MjA5NTM3MTQyMX0.TbCBdAiMPZ_RBCrz6c5jR0leEoElTsv9Stm-C7a8Cnc"
+  }
+}

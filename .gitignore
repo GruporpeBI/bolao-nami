@@ -1,0 +1,50 @@
+# ── dependencies ─────────────────────────────────────────────
+/node_modules
+**/node_modules
+/.pnp
+.pnp.*
+
+# ── backups (arquivos temporários de desenvolvimento) ─────────
+/_backups/
+
+# ── dev logs ─────────────────────────────────────────────────
+dev.log
+
+# ── Next.js ──────────────────────────────────────────────────
+/.next/
+/out/
+
+# ── build ────────────────────────────────────────────────────
+/build
+
+# ── environment (NUNCA commitar .env.local) ───────────────────
+.env.local
+.env.production
+.env*.local
+
+# ── TypeScript ───────────────────────────────────────────────
+*.tsbuildinfo
+next-env.d.ts
+
+# ── logs ─────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── debug/verificação (gerados por Playwright em dev) ────────
+/screenshots/
+
+# ── SO ───────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.pem
+
+# ── Vercel ───────────────────────────────────────────────────
+.vercel
+
+# ── Editor ───────────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+
+.vercel

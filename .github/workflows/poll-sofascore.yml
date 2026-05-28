@@ -1,0 +1,36 @@
+name: Poll Sofascore Live Data
+
+on:
+  schedule:
+    # Roda a cada 5 minutos entre 14h e 03h UTC (cobre horários de jogos da Copa)
+    # Nota: GitHub Actions tem granularidade mínima de 5 minutos
+    - cron: '*/5 14-23 * * *'   # 14h–23h59 UTC (11h–20h59 Brasília)
+    - cron: '*/5 0-3 * * *'     # 00h–03h59 UTC (21h–00h59 Brasília)
+  workflow_dispatch:             # Acionamento manual (útil para testes)
+
+jobs:
+  poll:
+    name: Poll Sofascore
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run poll-sofascore
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          APP_URL: ${{ secrets.APP_URL }}
+          SYNC_SECRET: ${{ secrets.SYNC_SECRET }}
+        run: node scripts/poll-sofascore.mjs

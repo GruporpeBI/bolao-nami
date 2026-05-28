@@ -1,0 +1,63 @@
+import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { createClient } from "@/lib/supabase/server";
+import { IconEscudo } from "@/components/icons";
+import AdminTabs from "./AdminTabs";
+import type { Database } from "@/lib/supabase/types";
+
+type GameRow = Database["public"]["Tables"]["games"]["Row"];
+type UserRow = Database["public"]["Tables"]["users"]["Row"];
+type AttendanceRow = Database["public"]["Tables"]["attendances"]["Row"];
+
+export default async function AdminPage() {
+  const cookieStore = await cookies();
+  const adminCookie = cookieStore.get("admin_access");
+  const supabase = await createClient();
+
+  if (!adminCookie) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || user.email !== process.env.ADMIN_EMAIL) {
+      redirect("/");
+    }
+  }
+
+  const { data: gamesData } = await supabase
+    .from("games")
+    .select("*")
+    .order("scheduled_at", { ascending: true });
+
+  const { data: usersData } = await supabase
+    .from("users")
+    .select("id, name")
+    .order("name", { ascending: true });
+
+  const { data: attendancesData } = await supabase
+    .from("attendances")
+    .select("user_id, game_id");
+
+  const games = (gamesData as GameRow[] | null) ?? [];
+  const users = (usersData as Pick<UserRow, "id" | "name">[] | null) ?? [];
+  const attendances = (attendancesData as Pick<AttendanceRow, "user_id" | "game_id">[] | null) ?? [];
+
+  return (
+    <main className="min-h-screen bg-[#1A1A1A]">
+      <header className="border-b border-[#F6C900]/20 px-6 py-4">
+        <div className="max-w-5xl mx-auto flex items-center gap-3">
+          <IconEscudo width={32} height={54} />
+          <div>
+            <p className="text-[#FAF6EB]/40 text-xs uppercase tracking-widest">Mercearia Amauri</p>
+            <h1 className="text-[#F6C900] font-bold text-lg leading-tight">Painel Admin</h1>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-5xl mx-auto px-4 py-10">
+        <AdminTabs
+          games={games}
+          users={users}
+          attendances={attendances}
+        />
+      </div>
+    </main>
+  );
+}
