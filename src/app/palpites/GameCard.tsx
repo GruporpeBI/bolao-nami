@@ -5,7 +5,7 @@ import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import CountdownTimer from "./CountdownTimer";
 import PredictionForm from "./PredictionForm";
-import { teamName } from "@/lib/team-names";
+import { teamName, teamFlagUrl } from "@/lib/team-names";
 
 interface GameCardProps {
   game: {
@@ -46,6 +46,8 @@ export default function GameCard({
 
   const homeTeam = teamName(game.home_team);
   const awayTeam = teamName(game.away_team);
+  const homeFlagUrl = teamFlagUrl(game.home_team);
+  const awayFlagUrl = teamFlagUrl(game.away_team);
 
   const scheduledAt = new Date(game.scheduled_at);
   const deadline = new Date(scheduledAt.getTime() - 5 * 60 * 1000);
@@ -80,13 +82,23 @@ export default function GameCard({
       </div>
 
       <div className="flex items-center justify-between gap-4 my-4">
-        <span className="text-[#FAF6EB] font-semibold text-lg text-right flex-1">
-          {homeTeam}
-        </span>
+        {/* Home */}
+        <div className="flex items-center justify-end gap-2 flex-1">
+          <span className="text-[#FAF6EB] font-semibold text-lg text-right">{homeTeam}</span>
+          {homeFlagUrl && (
+            <img src={homeFlagUrl} alt={homeTeam} className="w-6 h-6 rounded-sm object-cover flex-shrink-0" />
+          )}
+        </div>
+
         <span className="text-[#F6C900] font-black text-2xl shrink-0">×</span>
-        <span className="text-[#FAF6EB] font-semibold text-lg text-left flex-1">
-          {awayTeam}
-        </span>
+
+        {/* Away */}
+        <div className="flex items-center justify-start gap-2 flex-1">
+          {awayFlagUrl && (
+            <img src={awayFlagUrl} alt={awayTeam} className="w-6 h-6 rounded-sm object-cover flex-shrink-0" />
+          )}
+          <span className="text-[#FAF6EB] font-semibold text-lg text-left">{awayTeam}</span>
+        </div>
       </div>
 
       <div className="flex items-center justify-between gap-2">
