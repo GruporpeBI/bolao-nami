@@ -150,14 +150,17 @@ export async function updateGameResult(
 export async function recalculateScores(): Promise<{ success: boolean; error?: string }> {
   const supabase = getAdminClient();
 
+  // Jogos com resultado (para pontuação de palpites)
   const { data: gamesData } = await supabase
     .from("games")
     .select("*")
     .not("home_score", "is", null)
     .not("away_score", "is", null);
-
   const games = (gamesData as GameRow[] | null) ?? [];
-  if (!games.length) return { success: true };
+
+  // Todos os jogos (para pontuação de presença — não depende de resultado)
+  const { data: allGamesData } = await supabase.from("games").select("*");
+  const allGames = (allGamesData as GameRow[] | null) ?? [];
 
   const { data: predsData } = await supabase.from("predictions").select("*");
   const predictions = (predsData as PredictionRow[] | null) ?? [];
@@ -178,7 +181,11 @@ export async function recalculateScores(): Promise<{ success: boolean; error?: s
     ...allUsers.map((u) => u.id),
   ]);
 
-  const gameMap = new Map(games.map((g) => [g.id, g]));
+  // Sem usuários → nada a calcular
+  if (userIds.size === 0) return { success: true };
+
+  const gameMap = new Map(games.map((g) => [g.id, g]));           // jogos com resultado
+  const allGameMap = new Map(allGames.map((g) => [g.id, g]));     // todos os jogos
   const finalGame = games.find((g) => g.is_final);
 
   const scoresByUser: Record<string, {
@@ -219,7 +226,8 @@ export async function recalculateScores(): Promise<{ success: boolean; error?: s
   }
 
   for (const att of attendances) {
-    const game = gameMap.get(att.game_id);
+    // Presença conta para qualquer jogo habilitado, com ou sem resultado
+    const game = allGameMap.get(att.game_id);
     if (!game) continue;
 
     const uid = att.user_id;
