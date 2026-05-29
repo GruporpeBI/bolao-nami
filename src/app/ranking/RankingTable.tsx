@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Badge from "@/components/ui/Badge";
 
@@ -57,11 +58,18 @@ function ptsLabel(pts: number): string {
 }
 
 export default function RankingTable({ initialData, gameRankings }: RankingTableProps) {
+  const router = useRouter();
   const [data, setData] = useState<ScoreRow[]>(initialData);
   const [tab, setTab] = useState<"geral" | "jogo">("geral");
   const [selectedGame, setSelectedGame] = useState<string>(gameRankings[0]?.gameId ?? "");
 
-  // Realtime para ranking geral
+  // Atualiza dados do servidor a cada 60 segundos (ranking por jogo + geral)
+  useEffect(() => {
+    const id = setInterval(() => router.refresh(), 60_000);
+    return () => clearInterval(id);
+  }, [router]);
+
+  // Realtime para ranking geral (atualizações imediatas via Supabase)
   useEffect(() => {
     const supabase = createClient();
     const channel = supabase
