@@ -251,9 +251,7 @@ export default function RankingTable({ initialData, gameRankings }: RankingTable
 
               {currentGameRanking.entries.length === 0 ? (
                 <p className="text-[#FAF6EB]/40 text-sm py-8 text-center">
-                  {currentGameRanking.home_score === null
-                    ? "O ranking será exibido após o resultado do jogo."
-                    : "Nenhum palpite registrado para este jogo."}
+                  Nenhum palpite registrado para este jogo ainda.
                 </p>
               ) : (
               <div className="overflow-x-auto">
@@ -286,10 +284,16 @@ export default function RankingTable({ initialData, gameRankings }: RankingTable
                           {entry.home_pred} × {entry.away_pred}
                         </td>
                         <td className="py-3.5 text-right">
-                          <span className={`font-bold ${entry.pts > 0 ? "text-[#F6C900]" : "text-[#FAF6EB]/30"}`}>
-                            {entry.pts > 0 ? `+${entry.pts}` : "0"}
-                          </span>
-                          <span className="text-[#FAF6EB]/30 text-xs ml-1">{ptsLabel(entry.pts)}</span>
+                          {currentGameRanking.home_score === null ? (
+                            <span className="text-[#FAF6EB]/30 text-xs">Aguardando</span>
+                          ) : (
+                            <>
+                              <span className={`font-bold ${entry.pts > 0 ? "text-[#F6C900]" : "text-[#FAF6EB]/30"}`}>
+                                {entry.pts > 0 ? `+${entry.pts}` : "0"}
+                              </span>
+                              <span className="text-[#FAF6EB]/30 text-xs ml-1">{ptsLabel(entry.pts)}</span>
+                            </>
+                          )}
                         </td>
                       </tr>
                     ))}

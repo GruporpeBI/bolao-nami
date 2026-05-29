@@ -111,18 +111,6 @@ export default async function RankingPage() {
 
     if (visibleGames && visibleGames.length > 0) {
       for (const game of visibleGames) {
-        // Sem resultado: mostra o jogo no tab mas sem entradas de ranking
-        if (game.home_score === null || game.away_score === null) {
-          gameRankings.push({
-            gameId: game.id,
-            label: `${teamName(game.home_team)} × ${teamName(game.away_team)}`,
-            home_score: null,
-            away_score: null,
-            entries: [],
-          });
-          continue;
-        }
-
         type PredBasic = { user_id: string; home_score_pred: number; away_score_pred: number };
         const { data: predsRaw } = await supabase
           .from("predictions")
@@ -130,24 +118,29 @@ export default async function RankingPage() {
           .eq("game_id", game.id);
         const preds = predsRaw as PredBasic[] | null;
 
-        if (!preds || preds.length === 0) continue;
+        const userIds = (preds ?? []).map((p) => p.user_id);
+        let userNameMap = new Map<string, string>();
 
-        const userIds = preds.map((p) => p.user_id);
-        const { data: usersForGameRaw } = await supabase
-          .from("users")
-          .select("id, name")
-          .in("id", userIds);
-        const usersForGame = usersForGameRaw as UserBasic[] | null;
+        if (userIds.length > 0) {
+          const { data: usersForGameRaw } = await supabase
+            .from("users")
+            .select("id, name")
+            .in("id", userIds);
+          userNameMap = new Map((usersForGameRaw as UserBasic[] | null ?? []).map((u) => [u.id, u.name]));
+        }
 
-        const userNameMap = new Map((usersForGame ?? []).map((u) => [u.id, u.name]));
+        const hasResult = game.home_score !== null && game.away_score !== null;
 
-        const entries: GameRankingEntry[] = preds
+        const entries: GameRankingEntry[] = (preds ?? [])
           .map((p) => ({
             user_id: p.user_id,
             user_name: userNameMap.get(p.user_id) ?? "Participante",
             home_pred: p.home_score_pred,
             away_pred: p.away_score_pred,
-            pts: gamePts(p.home_score_pred, p.away_score_pred, game.home_score!, game.away_score!, game.is_final),
+            // 0 pts enquanto não há resultado; pts reais após resultado
+            pts: hasResult
+              ? gamePts(p.home_score_pred, p.away_score_pred, game.home_score!, game.away_score!, game.is_final)
+              : 0,
           }))
           .sort((a, b) => b.pts - a.pts);
 
