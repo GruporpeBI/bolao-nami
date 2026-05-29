@@ -237,7 +237,7 @@ export default function TournamentPredictions({ disabled, existing }: Tournament
             <div className="flex items-center gap-2 mt-2">
               <span className="text-[#FAF6EB]/40 text-xs">Campeão:</span>
               <span className="flex items-center gap-1.5 text-[#F6C900] font-bold">
-                🏆 <Flag name={existing.champion} />{existing.champion}
+                <img src="/api/flag/wc-logo" alt="Copa" style={{width:20,height:20,objectFit:"cover",borderRadius:3,flexShrink:0,display:"inline-block",verticalAlign:"middle"}} /> <Flag name={existing.champion} />{existing.champion}
               </span>
             </div>
           </div>
@@ -308,7 +308,7 @@ export default function TournamentPredictions({ disabled, existing }: Tournament
         {/* ── FINAL ── */}
         {finalReady && (
           <div className="flex flex-col gap-3 border-t border-[#F6C900]/20 pt-5">
-            <span className="text-sm font-bold text-[#F6C900] uppercase tracking-wider">🏆 Final</span>
+            <span className="text-sm font-bold text-[#F6C900] uppercase tracking-wider"><img src="/api/flag/wc-logo" alt="Copa" style={{width:20,height:20,objectFit:"cover",borderRadius:3,flexShrink:0,display:"inline-block",verticalAlign:"middle"}} /> Final</span>
             <div className="flex flex-wrap items-center gap-3">
               <span className="text-[#FAF6EB] font-semibold text-sm min-w-[120px]">{finalist1}</span>
               <ScoreInput value={finalA} onChange={setFinalA} disabled={lock} />
@@ -331,7 +331,7 @@ export default function TournamentPredictions({ disabled, existing }: Tournament
             {champion && (
               <div className="flex items-center gap-3 mt-1 bg-[#F6C900]/10 border border-[#F6C900]/30 rounded-sm px-4 py-3">
                 <span className="text-[#FAF6EB]/60 text-sm">Campeão:</span>
-                <span className="text-[#F6C900] font-black text-lg">🏆 {champion}</span>
+                <span className="text-[#F6C900] font-black text-lg"><img src="/api/flag/wc-logo" alt="Copa" style={{width:20,height:20,objectFit:"cover",borderRadius:3,flexShrink:0,display:"inline-block",verticalAlign:"middle"}} /> {champion}</span>
               </div>
             )}
           </div>
