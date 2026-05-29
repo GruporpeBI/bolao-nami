@@ -116,6 +116,59 @@ export const TEAM_FLAG_ID: Record<string, number> = {
   "Panama national football team": 5164,
 };
 
+// Mapeamento inverso: nome PT → ID (para palpites do torneio que usam nomes PT)
+const TEAM_FLAG_ID_PT: Record<string, number> = {
+  "Argentina": 4819,
+  "Austrália": 4741,
+  "Bélgica": 4717,
+  "Brasil": 4748,
+  "Canadá": 4752,
+  "Colômbia": 4820,
+  "Croácia": 4715,
+  "Egito": 4758,
+  "Equador": 4757,
+  "Espanha": 4698,
+  "Estados Unidos": 4724,
+  "França": 4481,
+  "Holanda": 4705,
+  "Irã": 4766,
+  "Japão": 4770,
+  "Marrocos": 4778,
+  "México": 4781,
+  "Nova Zelândia": 4784,
+  "Portugal": 4704,
+  "Qatar": 4792,
+  "Senegal": 4739,
+  "Suíça": 4699,
+  "Turquia": 4700,
+  "Uruguai": 4725,
+  "Escócia": 4695,
+  "Panamá": 5164,
+  "Alemanha": 4711,
+  "África do Sul": 4736,
+  "Coreia do Sul": 4735,
+  "Rep. Tcheca": 4714,
+  "Bósnia": 4479,
+  "Catar": 4792,
+  "Paraguai": 4789,
+  "Costa do Marfim": 4768,
+  "Tunísia": 4729,
+  "Argélia": 4691,
+  "Áustria": 4718,
+  "Jordânia": 4771,
+  "R.D. Congo": 4823,
+  "Uzbequistão": 4723,
+  "Inglaterra": 4713,
+  "Gana": 4764,
+  "Noruega": 4475,
+  "Suécia": 4688,
+  "Iraque": 4767,
+  "Arábia Saudita": 4834,
+  "Cabo Verde": 4753,
+  "Haiti": 7229,
+  "Curaçao": 55827,
+};
+
 export function teamName(name: string): string {
   if (!name) return name;
   return TEAM_NAMES_PTBR[name] ?? name;
@@ -124,6 +177,13 @@ export function teamName(name: string): string {
 /** Retorna a URL da bandeira via proxy para um nome de time (em inglês) */
 export function teamFlagUrl(name: string): string | null {
   const id = TEAM_FLAG_ID[name];
+  if (!id) return null;
+  return `/api/flag/${id}`;
+}
+
+/** Retorna a URL da bandeira para um nome de time (em português ou inglês) */
+export function teamFlagUrlByName(name: string): string | null {
+  const id = TEAM_FLAG_ID_PT[name] ?? TEAM_FLAG_ID[name];
   if (!id) return null;
   return `/api/flag/${id}`;
 }

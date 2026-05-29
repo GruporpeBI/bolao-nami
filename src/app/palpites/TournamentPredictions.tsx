@@ -4,6 +4,7 @@ import { useState } from "react";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { submitTournamentPredictions } from "./actions";
+import { teamFlagUrlByName } from "@/lib/team-names";
 
 const WC_2026_TEAMS = [
   "Argentina", "Austrália", "Bélgica", "Brasil", "Canadá", "Chile",
@@ -150,6 +151,19 @@ export default function TournamentPredictions({ disabled, existing }: Tournament
   const selectClass = "bg-[#1A1A1A] border border-[#F6C900]/30 text-[#FAF6EB] rounded-sm px-3 py-2 text-sm outline-none focus:border-[#F6C900] disabled:opacity-40";
 
   if (existing && lock) {
+    const Flag = ({ name }: { name: string }) => {
+      const url = teamFlagUrlByName(name);
+      if (!url) return null;
+      return <img src={url} alt={name} className="w-5 h-5 rounded-sm object-cover flex-shrink-0" />;
+    };
+
+    const TeamName = ({ name }: { name: string }) => (
+      <span className="flex items-center gap-1.5">
+        <Flag name={name} />
+        <span className="text-[#FAF6EB] font-semibold text-sm">{name}</span>
+      </span>
+    );
+
     return (
       <Card variant="dark" className="p-5 flex flex-col gap-5">
         <p className="text-xs text-[#FAF6EB]/50 uppercase tracking-wider">Palpites do Torneio — Enviados</p>
@@ -158,26 +172,30 @@ export default function TournamentPredictions({ disabled, existing }: Tournament
             { label: "Semifinal 1", a: existing.semi1, sa: existing.sf1_score_a, sb: existing.sf1_score_b, b: existing.semi2, winner: existing.finalist1 },
             { label: "Semifinal 2", a: existing.semi3, sa: existing.sf2_score_a, sb: existing.sf2_score_b, b: existing.semi4, winner: existing.finalist2 },
           ].map((sf) => (
-            <div key={sf.label} className="flex flex-col gap-1">
+            <div key={sf.label} className="flex flex-col gap-1.5">
               <span className="text-[#FAF6EB]/40 text-xs uppercase tracking-wider">{sf.label}</span>
-              <div className="flex items-center gap-3">
-                <span className="text-[#FAF6EB] font-semibold text-sm">{sf.a}</span>
+              <div className="flex flex-wrap items-center gap-2">
+                <TeamName name={sf.a} />
                 <span className="text-[#F6C900] font-black">{sf.sa} × {sf.sb}</span>
-                <span className="text-[#FAF6EB] font-semibold text-sm">{sf.b}</span>
-                <span className="ml-2 text-xs bg-[#004600] text-[#F6C900] px-2 py-0.5 rounded-sm">→ {sf.winner}</span>
+                <TeamName name={sf.b} />
+                <span className="flex items-center gap-1 text-xs bg-[#004600] text-[#F6C900] px-2 py-0.5 rounded-sm">
+                  → <Flag name={sf.winner} /><span>{sf.winner}</span>
+                </span>
               </div>
             </div>
           ))}
           <div className="border-t border-[#F6C900]/10 pt-3">
             <span className="text-[#FAF6EB]/40 text-xs uppercase tracking-wider">Final</span>
-            <div className="flex items-center gap-3 mt-1">
-              <span className="text-[#FAF6EB] font-semibold text-sm">{existing.finalist1}</span>
+            <div className="flex flex-wrap items-center gap-2 mt-1">
+              <TeamName name={existing.finalist1} />
               <span className="text-[#F6C900] font-black">{existing.final_score_a} × {existing.final_score_b}</span>
-              <span className="text-[#FAF6EB] font-semibold text-sm">{existing.finalist2}</span>
+              <TeamName name={existing.finalist2} />
             </div>
             <div className="flex items-center gap-2 mt-2">
               <span className="text-[#FAF6EB]/40 text-xs">Campeão:</span>
-              <span className="text-[#F6C900] font-bold">🏆 {existing.champion}</span>
+              <span className="flex items-center gap-1.5 text-[#F6C900] font-bold">
+                🏆 <Flag name={existing.champion} />{existing.champion}
+              </span>
             </div>
           </div>
         </div>
