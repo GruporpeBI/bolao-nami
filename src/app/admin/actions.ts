@@ -111,7 +111,7 @@ export async function updateGameResult(
   awayScore: number,
   possession: number
 ): Promise<{ success: boolean; error?: string }> {
-  const supabase = await createClient();
+  const supabase = getAdminClient();
 
   const { error } = await supabase
     .from("games")
@@ -258,6 +258,26 @@ export async function recalculateScores(): Promise<{ success: boolean; error?: s
 
       if (tp.champion === actualChampion) {
         scoresByUser[uid].tournament_pts += 101;
+      }
+
+      // Placar exato da final (121 pts)
+      // Compara final_score_a/b do tournament_predictions com o resultado real,
+      // respeitando a orientação: finalist1 → home ou away dependendo do jogo real.
+      if (tp.final_score_a !== null && tp.final_score_b !== null) {
+        const f1IsHome = tp.finalist1 === finalGame.home_team;
+        const f1IsAway = tp.finalist1 === finalGame.away_team;
+
+        const isFinalExact =
+          (f1IsHome &&
+            tp.final_score_a === finalGame.home_score &&
+            tp.final_score_b === finalGame.away_score) ||
+          (f1IsAway &&
+            tp.final_score_a === finalGame.away_score &&
+            tp.final_score_b === finalGame.home_score);
+
+        if (isFinalExact) {
+          scoresByUser[uid].exact_score_pts += 121;
+        }
       }
     }
   }
