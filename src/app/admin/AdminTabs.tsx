@@ -5,7 +5,6 @@ import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import GameRow from "./GameRow";
 import ResultModal from "./ResultModal";
-import SyncButton from "./SyncButton";
 import { recalculateScores, checkInUser } from "./actions";
 import LocationConfig from "./LocationConfig";
 
@@ -97,15 +96,14 @@ export default function AdminTabs({ games, users, attendances, locationConfig }:
 
       {tab === "games" && (
         <div>
-          <div className="flex items-center justify-between mb-5">
+          <div className="mb-5">
             <p className="text-[#FAF6EB]/50 text-sm">
               {games.length} jogo(s) no banco de dados
             </p>
-            <SyncButton />
           </div>
           {games.length === 0 ? (
             <p className="text-[#FAF6EB]/40 text-sm py-8 text-center">
-              Nenhum jogo encontrado. Use "Sincronizar da API" para importar os jogos.
+              Nenhum jogo encontrado.
             </p>
           ) : (
             <div className="overflow-x-auto">
@@ -115,8 +113,7 @@ export default function AdminTabs({ games, users, attendances, locationConfig }:
                     <th className="py-3 text-left pr-4">Jogo</th>
                     <th className="py-3 text-left pr-4">Fase</th>
                     <th className="py-3 text-left pr-4">Tags</th>
-                    <th className="py-3 text-left pr-4">Habilitar</th>
-                    <th className="py-3 text-left">Ranking</th>
+                    <th className="py-3 text-left">Habilitar</th>
                   </tr>
                 </thead>
                 <tbody>

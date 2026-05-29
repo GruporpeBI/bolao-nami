@@ -86,15 +86,27 @@ export default async function RankingPage() {
       .sort((a, b) => b.total_pts - a.total_pts)
       .slice(0, 10);
 
-    // ── Ranking por Jogo: jogos com ranking_visible=true e resultado ──
-    type GameVisible = { id: string; home_team: string; away_team: string; home_score: number | null; away_score: number | null; is_final: boolean; ranking_visible: boolean };
-    const { data: visibleGamesRaw } = await supabase
+    // ── Ranking por Jogo: jogos com resultado no dia do jogo ou dia seguinte ──
+    // Janela: yesterday 00:00 Brasília até hoje 23:59 Brasília
+    const nowBrasilia = new Date(Date.now() - 3 * 60 * 60 * 1000);
+    const todayBr = nowBrasilia.toISOString().slice(0, 10);
+    const yesterdayBr = new Date(nowBrasilia.getTime() - 86400000).toISOString().slice(0, 10);
+
+    type GameVisible = { id: string; home_team: string; away_team: string; home_score: number | null; away_score: number | null; is_final: boolean; scheduled_at: string };
+    const { data: allResultGamesRaw } = await supabase
       .from("games")
-      .select("id, home_team, away_team, home_score, away_score, is_final, ranking_visible")
-      .eq("ranking_visible", true as unknown as string)
+      .select("id, home_team, away_team, home_score, away_score, is_final, scheduled_at")
       .not("home_score", "is", null)
       .not("away_score", "is", null);
-    const visibleGames = visibleGamesRaw as GameVisible[] | null;
+
+    const allResultGames = (allResultGamesRaw as GameVisible[] | null) ?? [];
+
+    // Filtra jogos cujo dia (Brasília) é hoje ou ontem
+    const visibleGames = allResultGames.filter((g) => {
+      const gDay = new Date(new Date(g.scheduled_at).getTime() - 3 * 60 * 60 * 1000)
+        .toISOString().slice(0, 10);
+      return gDay === todayBr || gDay === yesterdayBr;
+    });
 
     if (visibleGames && visibleGames.length > 0) {
       for (const game of visibleGames) {

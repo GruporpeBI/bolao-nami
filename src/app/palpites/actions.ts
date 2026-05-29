@@ -188,3 +188,47 @@ export async function selfCheckIn(
   revalidatePath("/palpites");
   return { success: true };
 }
+
+// Retorna o jogo do Brasil de hoje + config de localização para check-in no login
+export async function getTodayCheckInGame(): Promise<{
+  gameId: string;
+  restaurantLat: number;
+  restaurantLng: number;
+  radiusM: number;
+} | null> {
+  try {
+    const supabase = await createClient();
+
+    // Data de hoje em Brasília (UTC-3)
+    const now = new Date();
+    const brasilia = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+    const today = brasilia.toISOString().slice(0, 10);
+
+    const { data: gamesRaw } = await supabase
+      .from("games")
+      .select("id, scheduled_at")
+      .eq("is_enabled", true as unknown as string)
+      .eq("is_brazil_game", true as unknown as string);
+
+    type GameBasic = { id: string; scheduled_at: string };
+    const todayGame = ((gamesRaw as GameBasic[] | null) ?? []).find((g) => {
+      const d = new Date(new Date(g.scheduled_at).getTime() - 3 * 60 * 60 * 1000);
+      return d.toISOString().slice(0, 10) === today;
+    });
+
+    if (!todayGame) return null;
+
+    // Busca config de localização
+    const { data: config } = await supabase.from("app_config").select("key, value");
+    const map = Object.fromEntries((config ?? []).map((r: { key: string; value: string }) => [r.key, r.value]));
+
+    return {
+      gameId: (todayGame as { id: string }).id,
+      restaurantLat: parseFloat(map.restaurant_lat ?? "-23.550520"),
+      restaurantLng: parseFloat(map.restaurant_lng ?? "-46.633309"),
+      radiusM: parseInt(map.checkin_radius_m ?? "400", 10),
+    };
+  } catch {
+    return null;
+  }
+}

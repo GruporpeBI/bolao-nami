@@ -3,7 +3,6 @@ import { IconEscudo } from "@/components/icons";
 import Badge from "@/components/ui/Badge";
 import GameCard from "./GameCard";
 import TournamentPredictions from "./TournamentPredictions";
-import CheckInButton from "./CheckInButton";
 import { getLocationConfig } from "@/app/admin/actions";
 import type { Database } from "@/lib/supabase/types";
 
@@ -138,16 +137,6 @@ export default async function PalpitesPage() {
           />
         </div>
 
-        {/* ── CHECK-IN POR GEOLOCALIZAÇÃO ── */}
-        {dbUserId && todayBrazilGame && (
-          <CheckInButton
-            gameId={todayBrazilGame.id}
-            alreadyCheckedIn={alreadyCheckedIn}
-            restaurantLat={locationConfig.lat}
-            restaurantLng={locationConfig.lng}
-            radiusM={locationConfig.radiusM}
-          />
-        )}
 
         {/* ── JOGOS ── */}
         {regularGames.length === 0 ? (

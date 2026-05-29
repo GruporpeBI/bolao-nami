@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Badge from "@/components/ui/Badge";
-import { toggleGameEnabled, toggleGameRanking } from "./actions";
+import { toggleGameEnabled } from "./actions";
 import { teamName } from "@/lib/team-names";
 
 interface GameRowProps {
@@ -15,7 +15,6 @@ interface GameRowProps {
     is_brazil_game: boolean;
     is_final: boolean;
     is_enabled: boolean;
-    ranking_visible: boolean;
     external_id: number | null;
   };
 }
@@ -28,53 +27,15 @@ const stageLabel: Record<string, string> = {
   final: "Final",
 };
 
-function Toggle({
-  checked,
-  onChange,
-  disabled,
-  label,
-}: {
-  checked: boolean;
-  onChange: () => void;
-  disabled: boolean;
-  label: string;
-}) {
-  return (
-    <button
-      onClick={onChange}
-      disabled={disabled}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none disabled:opacity-50 ${
-        checked ? "bg-[#004600]" : "bg-[#FAF6EB]/20"
-      }`}
-      aria-label={label}
-    >
-      <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
-          checked ? "translate-x-6" : "translate-x-1"
-        }`}
-      />
-    </button>
-  );
-}
-
 export default function GameRow({ game }: GameRowProps) {
   const [enabled, setEnabled] = useState(game.is_enabled);
-  const [rankingVisible, setRankingVisible] = useState(game.ranking_visible ?? false);
-  const [loadingEnabled, setLoadingEnabled] = useState(false);
-  const [loadingRanking, setLoadingRanking] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  async function handleToggleEnabled() {
-    setLoadingEnabled(true);
+  async function handleToggle() {
+    setLoading(true);
     const result = await toggleGameEnabled(game.id, !enabled);
     if (result.success) setEnabled((v) => !v);
-    setLoadingEnabled(false);
-  }
-
-  async function handleToggleRanking() {
-    setLoadingRanking(true);
-    const result = await toggleGameRanking(game.id, !rankingVisible);
-    if (result.success) setRankingVisible((v) => !v);
-    setLoadingRanking(false);
+    setLoading(false);
   }
 
   const dateStr = new Date(game.scheduled_at).toLocaleDateString("pt-BR", {
@@ -105,21 +66,21 @@ export default function GameRow({ game }: GameRowProps) {
           {game.is_final && <Badge variant="gold">Final</Badge>}
         </div>
       </td>
-      <td className="py-3 pr-4">
-        <Toggle
-          checked={enabled}
-          onChange={handleToggleEnabled}
-          disabled={loadingEnabled}
-          label={enabled ? "Desabilitar jogo" : "Habilitar jogo"}
-        />
-      </td>
       <td className="py-3">
-        <Toggle
-          checked={rankingVisible}
-          onChange={handleToggleRanking}
-          disabled={loadingRanking}
-          label={rankingVisible ? "Ocultar ranking do jogo" : "Mostrar ranking do jogo"}
-        />
+        <button
+          onClick={handleToggle}
+          disabled={loading}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none disabled:opacity-50 ${
+            enabled ? "bg-[#004600]" : "bg-[#FAF6EB]/20"
+          }`}
+          aria-label={enabled ? "Desabilitar jogo" : "Habilitar jogo"}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
+              enabled ? "translate-x-6" : "translate-x-1"
+            }`}
+          />
+        </button>
       </td>
     </tr>
   );
