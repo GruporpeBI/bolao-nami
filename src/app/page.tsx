@@ -1,6 +1,6 @@
 import Link from "next/link";
 import VideoBackground from "@/components/VideoBackground";
-import { IconEscudo, IconEstrelas, IconBadge2026 } from "@/components/icons";
+import { IconEscudo, IconBadge2026 } from "@/components/icons";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import Card from "@/components/ui/Card";
@@ -25,8 +25,6 @@ export default function HomePage() {
         <VideoBackground />
 
         <div className="relative z-10 flex flex-col items-center gap-6 max-w-2xl mx-auto">
-          <IconEstrelas width={180} height={50} className="mb-2" />
-
           <IconEscudo width={160} height={271} className="drop-shadow-2xl" />
 
           <div className="flex flex-col gap-2">
