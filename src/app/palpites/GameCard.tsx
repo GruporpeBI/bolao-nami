@@ -91,15 +91,17 @@ export default function GameCard({
 
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          {!isPastDeadline ? (
-            <>
-              <span className="text-[#FAF6EB]/50 text-xs">Fecha em:</span>
-              <CountdownTimer deadline={deadline} />
-            </>
-          ) : (
+          {isPastDeadline ? (
             <span className="text-xs text-red-500 font-bold uppercase tracking-wider">
               Encerrado
             </span>
+          ) : isPredictionDay ? (
+            <>
+              <span className="text-[#FAF6EB]/50 text-xs shrink-0">Fecha em:</span>
+              <CountdownTimer target={deadline} />
+            </>
+          ) : (
+            <CountdownTimer target={scheduledAt} />
           )}
         </div>
 
@@ -115,7 +117,7 @@ export default function GameCard({
 
       {/* Aviso: palpite só no dia do jogo */}
       {!isPredictionDay && !existingPrediction && !isPastDeadline && (
-        <p className="text-xs text-[#FAF6EB]/40 mt-3 italic">
+        <p className="text-xs text-[#FAF6EB]/40 mt-2">
           Este palpite poderá ser feito no dia do jogo.
         </p>
       )}
