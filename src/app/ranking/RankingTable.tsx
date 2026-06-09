@@ -14,6 +14,7 @@ interface ScoreRow {
   tournament_pts: number;
   total_pts: number;
   updated_at: string;
+  poss_team_correct: number;
   poss_proximity: number;
 }
 
@@ -23,6 +24,7 @@ interface GameRankingEntry {
   home_pred: number;
   away_pred: number;
   pts: number;
+  poss_team_correct: number;
   poss_proximity: number;
   attendance_pts: number;
 }
@@ -86,25 +88,24 @@ export default function RankingTable({ initialData, gameRankings }: RankingTable
             const sortAll = (rows: ScoreRow[]) =>
               rows
                 .sort((a, b) => {
-                  if (b.total_pts !== a.total_pts)           return b.total_pts - a.total_pts;
-                  if (a.poss_proximity !== b.poss_proximity) return a.poss_proximity - b.poss_proximity;
-                  if (b.attendance_pts !== a.attendance_pts) return b.attendance_pts - a.attendance_pts;
-                  if (b.exact_score_pts !== a.exact_score_pts) return b.exact_score_pts - a.exact_score_pts;
+                  if (b.total_pts !== a.total_pts)                 return b.total_pts - a.total_pts;
+                  if (b.poss_team_correct !== a.poss_team_correct) return b.poss_team_correct - a.poss_team_correct;
+                  if (a.poss_proximity !== b.poss_proximity)       return a.poss_proximity - b.poss_proximity;
+                  if (b.attendance_pts !== a.attendance_pts)       return b.attendance_pts - a.attendance_pts;
+                  if (b.exact_score_pts !== a.exact_score_pts)     return b.exact_score_pts - a.exact_score_pts;
                   return b.result_pts - a.result_pts;
                 })
                 .slice(0, 10);
 
             if (payload.eventType === "INSERT") {
-              // New user: poss_proximity unknown from Realtime — default high value
-              const newRow = { ...(payload.new as ScoreRow), poss_proximity: 9999 };
+              const newRow = { ...(payload.new as ScoreRow), poss_team_correct: 0, poss_proximity: 9999 };
               return sortAll([...prev, newRow]);
             }
             if (payload.eventType === "UPDATE") {
               return sortAll(
                 prev.map((row) =>
                   row.user_id === (payload.new as ScoreRow).user_id
-                    // Preserve poss_proximity from state — it doesn't change mid-game
-                    ? { ...row, ...(payload.new as ScoreRow), poss_proximity: row.poss_proximity }
+                    ? { ...row, ...(payload.new as ScoreRow), poss_team_correct: row.poss_team_correct, poss_proximity: row.poss_proximity }
                     : row
                 )
               );

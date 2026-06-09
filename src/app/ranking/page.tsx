@@ -15,7 +15,8 @@ interface ScoreRow {
   tournament_pts: number;
   total_pts: number;
   updated_at: string;
-  poss_proximity: number; // soma de |possession_pred - ball_possession_home| — menor = melhor
+  poss_team_correct: number; // nº de jogos onde acertou o time dominante — maior = melhor
+  poss_proximity: number;    // soma de |possession_pred - ball_possession_home| — menor = melhor
 }
 
 interface GameRankingEntry {
@@ -24,7 +25,8 @@ interface GameRankingEntry {
   home_pred: number;
   away_pred: number;
   pts: number;
-  poss_proximity: number; // |possession_pred - ball_possession_home| para este jogo
+  poss_team_correct: number; // 1 se acertou o time dominante, 0 se não
+  poss_proximity: number;    // |possession_pred - ball_possession_home| para este jogo
   attendance_pts: number;
 }
 
@@ -83,8 +85,12 @@ export default async function RankingPage() {
     const scoresData = (scoresRaw as ScoreBasic[] | null);
     const gamesWithPoss = (gamesWithPossRaw as GamePoss[] | null) ?? [];
 
-    // Compute possession proximity sum per user across all finished games
-    const possProximityMap = new Map<string, number>();
+    // Compute possession tiebreakers per user across all finished games:
+    //   poss_team_correct: how many games they picked the right dominant team (more = better)
+    //   poss_proximity:    sum of |possession_pred - ball_possession_home| (less = better)
+    const possTeamCorrectMap = new Map<string, number>();
+    const possProximityMap   = new Map<string, number>();
+
     if (gamesWithPoss.length > 0) {
       const { data: allPossPredsRaw } = await supabase
         .from("predictions")
@@ -96,6 +102,12 @@ export default async function RankingPage() {
       for (const pred of (allPossPredsRaw as PossPred[] | null) ?? []) {
         const actual = gamePossMap.get(pred.game_id);
         if (actual == null || pred.possession_pred == null) continue;
+
+        // 1 if user picked the correct dominant team (both > 50 or both < 50)
+        const correctTeam = (pred.possession_pred > 50) === (actual > 50) ? 1 : 0;
+        possTeamCorrectMap.set(pred.user_id, (possTeamCorrectMap.get(pred.user_id) ?? 0) + correctTeam);
+
+        // proximity to exact value
         const diff = Math.abs(pred.possession_pred - actual);
         possProximityMap.set(pred.user_id, (possProximityMap.get(pred.user_id) ?? 0) + diff);
       }
@@ -115,15 +127,16 @@ export default async function RankingPage() {
           tournament_pts: s?.tournament_pts ?? 0,
           total_pts: s?.total_pts ?? 0,
           updated_at: s?.updated_at ?? "",
-          // 9999 para usuários sem palpites (não penaliza quem não participou ainda)
-          poss_proximity: possProximityMap.get(u.id) ?? 9999,
+          poss_team_correct: possTeamCorrectMap.get(u.id) ?? 0,    // 0 = não acertou nenhum time
+          poss_proximity:    possProximityMap.get(u.id) ?? 9999,    // 9999 = sem palpites ainda
         };
       })
       .sort((a, b) => {
-        if (b.total_pts !== a.total_pts)         return b.total_pts - a.total_pts;
-        if (a.poss_proximity !== b.poss_proximity) return a.poss_proximity - b.poss_proximity;
-        if (b.attendance_pts !== a.attendance_pts) return b.attendance_pts - a.attendance_pts;
-        if (b.exact_score_pts !== a.exact_score_pts) return b.exact_score_pts - a.exact_score_pts;
+        if (b.total_pts !== a.total_pts)                 return b.total_pts - a.total_pts;
+        if (b.poss_team_correct !== a.poss_team_correct) return b.poss_team_correct - a.poss_team_correct;
+        if (a.poss_proximity !== b.poss_proximity)       return a.poss_proximity - b.poss_proximity;
+        if (b.attendance_pts !== a.attendance_pts)       return b.attendance_pts - a.attendance_pts;
+        if (b.exact_score_pts !== a.exact_score_pts)     return b.exact_score_pts - a.exact_score_pts;
         return b.result_pts - a.result_pts;
       })
       .slice(0, 10);
@@ -189,23 +202,32 @@ export default async function RankingPage() {
             const pts = hasResult
               ? gamePts(p.home_score_pred, p.away_score_pred, game.home_score!, game.away_score!, game.is_final)
               : 0;
-            // Proximidade de posse: |pred - actual| — 9999 se sem dado
+
+            // 1 se acertou qual time teria mais posse (ambos > 50 ou ambos < 50)
+            const possTeamCorrect = (actualPoss != null && p.possession_pred != null)
+              ? ((p.possession_pred > 50) === (actualPoss > 50) ? 1 : 0)
+              : 0;
+
+            // Proximidade ao valor exato — menor = melhor
             const possProximity = (actualPoss != null && p.possession_pred != null)
               ? Math.abs(p.possession_pred - actualPoss)
               : 9999;
+
             return {
-              user_id:       p.user_id,
-              user_name:     userNameMap.get(p.user_id) ?? "Participante",
-              home_pred:     p.home_score_pred,
-              away_pred:     p.away_score_pred,
+              user_id:          p.user_id,
+              user_name:        userNameMap.get(p.user_id) ?? "Participante",
+              home_pred:        p.home_score_pred,
+              away_pred:        p.away_score_pred,
               pts,
-              poss_proximity: possProximity,
-              attendance_pts: attendanceMap.get(p.user_id) ?? 0,
+              poss_team_correct: possTeamCorrect,
+              poss_proximity:    possProximity,
+              attendance_pts:    attendanceMap.get(p.user_id) ?? 0,
             };
           })
           .sort((a, b) => {
-            if (b.pts !== a.pts)                   return b.pts - a.pts;
-            if (a.poss_proximity !== b.poss_proximity) return a.poss_proximity - b.poss_proximity;
+            if (b.pts !== a.pts)                             return b.pts - a.pts;
+            if (b.poss_team_correct !== a.poss_team_correct) return b.poss_team_correct - a.poss_team_correct;
+            if (a.poss_proximity !== b.poss_proximity)       return a.poss_proximity - b.poss_proximity;
             return b.attendance_pts - a.attendance_pts;
           });
 
