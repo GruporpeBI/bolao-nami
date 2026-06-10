@@ -5,9 +5,10 @@
  * api_football_fixture_id for all games that are missing any of those IDs.
  *
  * Sources queried (1 bulk request each):
- *   1. TheSportsDB   → /eventsseason.php?id=4328&s=2026-2027 (extrai intAPIfootballID também)
+ *   1. TheSportsDB   → /eventsseason.php?id=4429&s=2026 (primary)
+ *                    → /eventsnextleague.php?id=4429 (fallback, tem idAPIfootball)
  *   2. ESPN          → /scoreboard?limit=200&dates=20260611-20260719
- *   3. API-Football  → /fixtures?league=1&season=2026 (fallback se TDB não tiver intAPIfootballID)
+ *   3. API-Football  → /fixtures?league=1&season=2026 (fallback se TDB não tiver idAPIfootball)
  *
  * Team name matching uses a normalizer to handle aliases like
  * "United States" ↔ "USA", "Republic of Korea" ↔ "South Korea", etc.
@@ -141,7 +142,7 @@ async function loadEspnEvents(): Promise<EspnEvent[]> {
 }
 
 // ---------------------------------------------------------------------------
-// Source: TheSportsDB — WC season events (league 4328 = FIFA World Cup)
+// Source: TheSportsDB — WC season events (league 4429 = FIFA World Cup 2026)
 // ---------------------------------------------------------------------------
 
 interface TdbEvent {
@@ -154,18 +155,36 @@ interface TdbEvent {
 }
 
 async function loadTdbEvents(): Promise<TdbEvent[]> {
-  // Try season endpoint for FIFA World Cup (league 4328, season 2026-2027)
-  const url = "https://www.thesportsdb.com/api/v1/json/3/eventsseason.php?id=4328&s=2026-2027";
+  // FIFA World Cup 2026 (league 4429, season 2026)
+  const urlPrimary = "https://www.thesportsdb.com/api/v1/json/123/eventsseason.php?id=4429&s=2026";
+  const urlFallback = "https://www.thesportsdb.com/api/v1/json/123/eventsnextleague.php?id=4429";
+
   try {
-    const res = await fetch(url, { headers: { Accept: "application/json" } });
-    if (!res.ok) {
-      console.warn(`[enrich-ids] TDB season HTTP ${res.status}`);
+    // Tenta eventsseason.php primeiro
+    const res = await fetch(urlPrimary, { headers: { Accept: "application/json" } });
+    if (res.ok) {
+      const data = await res.json() as { events: TdbEvent[] | null };
+      if (data.events && data.events.length > 0) {
+        console.log(`[enrich-ids] TDB season loaded: ${data.events.length} events`);
+        return data.events;
+      }
+    }
+
+    // Fallback: eventsnextleague.php
+    console.warn(`[enrich-ids] TDB season returned empty, trying eventsnextleague...`);
+    const resFallback = await fetch(urlFallback, { headers: { Accept: "application/json" } });
+    if (!resFallback.ok) {
+      console.warn(`[enrich-ids] TDB eventsnextleague HTTP ${resFallback.status}`);
       return [];
     }
-    const data = await res.json() as { events: TdbEvent[] | null };
-    return data.events ?? [];
+    const dataFallback = await resFallback.json() as { events: TdbEvent[] | null };
+    if (dataFallback.events?.length > 0) {
+      console.log(`[enrich-ids] TDB eventsnextleague loaded: ${dataFallback.events.length} events`);
+      return dataFallback.events;
+    }
+    return [];
   } catch (err) {
-    console.warn("[enrich-ids] TDB season fetch error:", err);
+    console.warn("[enrich-ids] TDB fetch error:", err);
     return [];
   }
 }
