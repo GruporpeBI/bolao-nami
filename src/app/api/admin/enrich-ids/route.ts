@@ -5,10 +5,12 @@
  * api_football_fixture_id for all games that are missing any of those IDs.
  *
  * Sources queried:
- *   1. TheSportsDB   → /eventsseason.php?id=4429&s=2026 (15 eventos)
+ *   1. TheSportsDB   → /eventsseason.php?id=4429&s=2026 (Copa 2026)
  *                    + /eventsnextleague.php?id=4429 (suplementa idAPIfootball)
- *   2. ESPN          → /scoreboard?limit=200&dates=20260611-20260719 (104 eventos)
- *   3. API-Football  → /fixtures?league=1&season=2026 (fallback, requer plano pago para 2026)
+ *   2. ESPN          → /scoreboard?limit=200&dates=20260611-20260719 (fifa.world)
+ *
+ * Note: API-Football liga 1 (World Cup) requer plano pago para season 2026,
+ * portanto não é usado para enriquecer fixture IDs.
  *
  * Team name matching uses a normalizer to handle aliases like
  * "United States" ↔ "USA", "Republic of Korea" ↔ "South Korea", etc.
@@ -41,19 +43,9 @@ function getDb() {
 }
 
 // ---------------------------------------------------------------------------
-// API-Football dual-key fetch
+// Note: API-Football não é usado para Copa 2026 (requer plano pago)
+// Mantém fallback de dados via TheSportsDB + ESPN
 // ---------------------------------------------------------------------------
-
-async function fetchAf(url: string): Promise<Response> {
-  const key1 = process.env.API_FOOTBALL_KEY ?? "";
-  const key2 = process.env.API_FOOTBALL_KEY_2 ?? "";
-  const res1 = await fetch(url, { headers: { "x-apisports-key": key1 } });
-  const remaining = Number(res1.headers.get("x-ratelimit-requests-remaining") ?? "1");
-  if ((res1.status === 429 || remaining === 0) && key2) {
-    return fetch(url, { headers: { "x-apisports-key": key2 } });
-  }
-  return res1;
-}
 
 // ---------------------------------------------------------------------------
 // Team name normalizer — handles common aliases between sources
@@ -90,26 +82,6 @@ function datesMatch(d1: string, d2: string): boolean {
   return d1.slice(0, 10) === d2.slice(0, 10);
 }
 
-// ---------------------------------------------------------------------------
-// Source: API-Football — all WC 2026 fixtures
-// ---------------------------------------------------------------------------
-
-interface AfFixture {
-  fixture: { id: number; date: string };
-  teams:   { home: { id: number; name: string }; away: { id: number; name: string } };
-  league:  { id: number; name: string };
-}
-
-async function loadAfFixtures(): Promise<AfFixture[]> {
-  const url = "https://v3.football.api-sports.io/fixtures?league=1&season=2026";
-  const res = await fetchAf(url);
-  if (!res.ok) {
-    console.warn(`[enrich-ids] AF fixtures HTTP ${res.status}`);
-    return [];
-  }
-  const data = await res.json() as { response: AfFixture[] };
-  return data.response ?? [];
-}
 
 // ---------------------------------------------------------------------------
 // Source: ESPN — WC 2026 scoreboard (all games in one call)
@@ -204,16 +176,6 @@ async function loadTdbEvents(): Promise<TdbEvent[]> {
 // Matching helpers
 // ---------------------------------------------------------------------------
 
-function findAfFixture(game: GameRow, fixtures: AfFixture[]): AfFixture | undefined {
-  return fixtures.find((f) =>
-    datesMatch(game.scheduled_at, f.fixture.date) &&
-    (
-      (teamsMatch(game.home_team, f.teams.home.name) && teamsMatch(game.away_team, f.teams.away.name)) ||
-      (teamsMatch(game.home_team, f.teams.away.name) && teamsMatch(game.away_team, f.teams.home.name))
-    )
-  );
-}
-
 function findEspnEvent(game: GameRow, events: EspnEvent[]): EspnEvent | undefined {
   return events.find((e) => {
     const comp = e.competitions?.[0];
@@ -288,25 +250,18 @@ export async function POST(req: NextRequest) {
   }
 
   // Load all fixtures/events from each source in parallel
-  const [afFixtures, espnEvents, tdbEvents] = await Promise.all([
-    loadAfFixtures(),
+  const [espnEvents, tdbEvents] = await Promise.all([
     loadEspnEvents(),
     loadTdbEvents(),
   ]);
 
-  console.log(`[enrich-ids] sources: AF=${afFixtures.length} ESPN=${espnEvents.length} TDB=${tdbEvents.length}`);
+  console.log(`[enrich-ids] sources: ESPN=${espnEvents.length} TDB=${tdbEvents.length}`);
 
   let updated = 0;
-  const results: Array<{ game: string; af: boolean; espn: boolean; tdb: boolean }> = [];
+  const results: Array<{ game: string; espn: boolean; tdb: boolean }> = [];
 
   for (const game of games) {
     const patch: Partial<GameRow> = {};
-
-    // API-Football
-    if (!game.api_football_fixture_id) {
-      const af = findAfFixture(game, afFixtures);
-      if (af) patch.api_football_fixture_id = String(af.fixture.id);
-    }
 
     // ESPN
     if (!game.espn_event_id) {
@@ -317,12 +272,12 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // TheSportsDB — também extrai idAPIfootball se disponível
+    // TheSportsDB — extrai thesportsdb_event_id e idAPIfootball
     if (!game.thesportsdb_event_id) {
       const tdb = findTdbEvent(game, tdbEvents);
       if (tdb) {
         patch.thesportsdb_event_id = tdb.idEvent;
-        // Se TDB tem o ID de API-Football, usa direto (não precisa de busca separada)
+        // Se TDB tem o ID de API-Football, usa direto
         if (!game.api_football_fixture_id && tdb.idAPIfootball) {
           patch.api_football_fixture_id = String(tdb.idAPIfootball);
         }
@@ -335,7 +290,6 @@ export async function POST(req: NextRequest) {
         updated++;
         results.push({
           game: `${game.home_team} × ${game.away_team}`,
-          af:   "api_football_fixture_id" in patch,
           espn: "espn_event_id" in patch,
           tdb:  "thesportsdb_event_id" in patch,
         });
@@ -349,7 +303,7 @@ export async function POST(req: NextRequest) {
     ok:        true,
     scanned:   games.length,
     updated,
-    sources:   { af: afFixtures.length, espn: espnEvents.length, tdb: tdbEvents.length },
+    sources:   { espn: espnEvents.length, tdb: tdbEvents.length },
     results,
   });
 }
