@@ -40,7 +40,9 @@ interface GameRanking {
   away_score: number | null;
   homeTeam: string;
   awayTeam: string;
-  ballPossessionHome: number | null; // posse real do mandante (%) — fim de jogo
+  ballPossessionHome: number | null; // posse OFICIAL do mandante (%) — fim de jogo
+  livePossessionHome: number | null; // posse AO VIVO do mandante (%) — informativa
+  isLive: boolean;                    // jogo em andamento (status_type = inprogress)
   entries: GameRankingEntry[];
 }
 
@@ -63,7 +65,7 @@ function gamePts(
 export default async function RankingPage() {
   let top10: ScoreRow[] = [];
   let gameRankings: GameRanking[] = [];
-  type LiveGame = { id: string; home_team: string; away_team: string; home_score: number; away_score: number; ball_possession_home: number | null; status_type: string | null; status_description: string | null };
+  type LiveGame = { id: string; home_team: string; away_team: string; home_score: number; away_score: number; ball_possession_home: number | null; live_possession_home: number | null; status_type: string | null; status_description: string | null };
   let liveGames: LiveGame[] = [];
 
   try {
@@ -148,7 +150,7 @@ export default async function RankingPage() {
     // ── Jogos ao vivo (com placar atual do Sofascore) ──
     const { data: liveGamesRaw } = await supabase
       .from("games")
-      .select("id, home_team, away_team, home_score, away_score, ball_possession_home, status_type, status_description")
+      .select("id, home_team, away_team, home_score, away_score, ball_possession_home, live_possession_home, status_type, status_description")
       .not("home_score", "is", null)
       .not("status_type", "in", '("finished","canceled","postponed")');
     liveGames = (liveGamesRaw as LiveGame[] | null) ?? [];
@@ -159,12 +161,12 @@ export default async function RankingPage() {
     const todayBr = nowBrasilia.toISOString().slice(0, 10);
     const yesterdayBr = new Date(nowBrasilia.getTime() - 86400000).toISOString().slice(0, 10);
 
-    type GameVisible = { id: string; home_team: string; away_team: string; home_score: number | null; away_score: number | null; ball_possession_home: number | null; is_final: boolean; scheduled_at: string };
+    type GameVisible = { id: string; home_team: string; away_team: string; home_score: number | null; away_score: number | null; ball_possession_home: number | null; live_possession_home: number | null; is_final: boolean; scheduled_at: string; status_type: string | null };
 
     // Todos os jogos habilitados — sem filtro de resultado
     const { data: allEnabledGamesRaw } = await supabase
       .from("games")
-      .select("id, home_team, away_team, home_score, away_score, ball_possession_home, is_final, scheduled_at")
+      .select("id, home_team, away_team, home_score, away_score, ball_possession_home, live_possession_home, is_final, scheduled_at, status_type")
       .eq("is_enabled", true as unknown as string);
 
     const allEnabledGames = (allEnabledGamesRaw as GameVisible[] | null) ?? [];
@@ -256,6 +258,8 @@ export default async function RankingPage() {
           homeTeam: teamName(game.home_team),
           awayTeam: teamName(game.away_team),
           ballPossessionHome: game.ball_possession_home,
+          livePossessionHome: game.live_possession_home,
+          isLive: game.status_type === "inprogress",
           entries,
         });
       }
@@ -295,11 +299,12 @@ export default async function RankingPage() {
                     <span className="text-[#F6C900] font-black text-2xl">{g.home_score} × {g.away_score}</span>
                     <span className="text-[#FAF6EB] font-semibold text-sm">{teamName(g.away_team)}</span>
                   </div>
-                  {g.ball_possession_home != null && g.ball_possession_home > 0 && g.ball_possession_home < 100 && g.ball_possession_home !== 50 && (
+                  {g.live_possession_home != null && g.live_possession_home > 0 && g.live_possession_home < 100 && g.live_possession_home !== 50 && (
                     <p className="text-[#FAF6EB]/50 text-xs text-center mt-0.5">
-                      {g.ball_possession_home > 50
-                        ? `${teamName(g.home_team)} ${g.ball_possession_home}% posse`
-                        : `${teamName(g.away_team)} ${100 - g.ball_possession_home}% posse`}
+                      {g.live_possession_home > 50
+                        ? `${teamName(g.home_team)} ${g.live_possession_home}% posse`
+                        : `${teamName(g.away_team)} ${100 - g.live_possession_home}% posse`}
+                      <span className="text-[#FAF6EB]/30"> · ao vivo</span>
                     </p>
                   )}
                 </div>

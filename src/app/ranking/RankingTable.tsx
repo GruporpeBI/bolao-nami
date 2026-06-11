@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Badge from "@/components/ui/Badge";
@@ -40,6 +40,8 @@ interface GameRanking {
   homeTeam: string;
   awayTeam: string;
   ballPossessionHome: number | null;
+  livePossessionHome: number | null;
+  isLive: boolean;
   entries: GameRankingEntry[];
 }
 
@@ -79,14 +81,31 @@ function possessionLabel(pred: number | null, homeTeam: string, awayTeam: string
 export default function RankingTable({ initialData, gameRankings }: RankingTableProps) {
   const router = useRouter();
   const [data, setData] = useState<ScoreRow[]>(initialData);
-  const [tab, setTab] = useState<"geral" | "jogo">("geral");
-  const [selectedGame, setSelectedGame] = useState<string>(gameRankings[0]?.gameId ?? "");
+
+  // Jogo em andamento → abre o "Ranking por Jogo" como aba primária
+  const liveGame = gameRankings.find((g) => g.isLive) ?? null;
+  const [tab, setTab] = useState<"geral" | "jogo">(liveGame ? "jogo" : "geral");
+  const [selectedGame, setSelectedGame] = useState<string>(
+    liveGame?.gameId ?? gameRankings[0]?.gameId ?? ""
+  );
 
   // Atualiza dados do servidor a cada 60 segundos (ranking por jogo + geral)
   useEffect(() => {
     const id = setInterval(() => router.refresh(), 60_000);
     return () => clearInterval(id);
   }, [router]);
+
+  // Quando um jogo ENTRA ao vivo (após carregar a página), abre o ranking dele.
+  // Só age na transição → não força o usuário caso ele troque manualmente depois.
+  const prevLiveRef = useRef<string | null>(liveGame?.gameId ?? null);
+  useEffect(() => {
+    const currentLive = gameRankings.find((g) => g.isLive)?.gameId ?? null;
+    if (currentLive && currentLive !== prevLiveRef.current) {
+      setTab("jogo");
+      setSelectedGame(currentLive);
+    }
+    prevLiveRef.current = currentLive;
+  }, [gameRankings]);
 
   // Realtime para ranking geral (atualizações imediatas via Supabase)
   useEffect(() => {
@@ -151,13 +170,14 @@ export default function RankingTable({ initialData, gameRankings }: RankingTable
         {gameRankings.length > 0 && (
           <button
             onClick={() => setTab("jogo")}
-            className={`px-5 py-2.5 text-sm font-bold border-b-2 transition-colors ${
+            className={`px-5 py-2.5 text-sm font-bold border-b-2 transition-colors inline-flex items-center gap-1.5 ${
               tab === "jogo"
                 ? "border-[#F6C900] text-[#F6C900]"
                 : "border-transparent text-[#FAF6EB]/50 hover:text-[#FAF6EB]"
             }`}
           >
             Ranking por Jogo
+            {liveGame && <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />}
           </button>
         )}
       </div>
@@ -265,10 +285,20 @@ export default function RankingTable({ initialData, gameRankings }: RankingTable
                       <span className="text-[#F6C900] font-black text-xl">
                         {currentGameRanking.home_score} × {currentGameRanking.away_score}
                       </span>
-                      <Badge variant="green">Resultado final</Badge>
+                      {currentGameRanking.isLive ? (
+                        <span className="inline-flex items-center gap-1.5 text-green-400 text-xs font-bold uppercase tracking-wider">
+                          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                          Ao vivo
+                        </span>
+                      ) : (
+                        <Badge variant="green">Resultado final</Badge>
+                      )}
                     </div>
                     {(() => {
-                      const hp = currentGameRanking.ballPossessionHome;
+                      // Ao vivo → posse informativa (live); encerrado → posse oficial.
+                      const hp = currentGameRanking.isLive
+                        ? currentGameRanking.livePossessionHome
+                        : currentGameRanking.ballPossessionHome;
                       // 0/100/null = sem dado de posse → não exibe
                       if (hp == null || hp <= 0 || hp >= 100) return null;
                       const team = hp > 50 ? currentGameRanking.homeTeam
@@ -278,6 +308,7 @@ export default function RankingTable({ initialData, gameRankings }: RankingTable
                       return (
                         <span className="text-[#FAF6EB]/50 text-xs">
                           Posse de bola: {team ? `${team} ${pct}%` : "50% / 50%"}
+                          {currentGameRanking.isLive && <span className="text-[#FAF6EB]/30"> · ao vivo</span>}
                         </span>
                       );
                     })()}

@@ -237,17 +237,19 @@ Deno.serve(async (req: Request) => {
     );
   }
 
-  // 4b. Atualiza o games AO VIVO (placar + status) para exibição no site.
-  //     A POSSE NÃO é gravada aqui — só no FT, via compareAndFinalize (após conferir
-  //     ESPN + a outra fonte). Respeita result_locked (override do admin).
+  // 4b. Atualiza o games AO VIVO (placar + status + posse INFORMATIVA).
+  //     live_possession_home = posse ao vivo (informativa, não conta na pontuação).
+  //     A posse OFICIAL (ball_possession_home) é gravada só no FT via compareAndFinalize.
+  //     Respeita result_locked (override do admin).
   if (espnData.home != null) {
     let upd = supabase
       .from("games")
       .update({
-        home_score:         espnData.home,
-        away_score:         espnData.away,
-        status_type:        isFt ? "finished" : "inprogress",
-        status_description: espnData.status,
+        home_score:           espnData.home,
+        away_score:           espnData.away,
+        live_possession_home: espnData.possession != null ? Math.round(espnData.possession) : null,
+        status_type:          isFt ? "finished" : "inprogress",
+        status_description:   espnData.status,
       })
       .eq("id", game.id)
       .eq("result_locked", false);
