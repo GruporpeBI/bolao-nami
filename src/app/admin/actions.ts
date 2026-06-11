@@ -4,8 +4,17 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { getWorldCupMatches } from "@/lib/football-api";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import type { Database } from "@/lib/supabase/types";
 import { teamName } from "@/lib/team-names";
+import { getTenantId } from "@/lib/tenant";
+
+// Ações sobre jogos COMPARTILHADOS exigem a senha mestra (cookie master_admin)
+async function isMasterAdmin(): Promise<boolean> {
+  const c = await cookies();
+  return !!c.get("master_admin");
+}
+const MASTER_ERR = "Ação restrita: requer senha mestra (Jogos/Resultados).";
 
 function getAdminClient() {
   return createServiceClient<Database>(
@@ -32,6 +41,7 @@ function stageFromFD(stage: string): GameRow["stage"] {
 }
 
 export async function syncGamesFromAPI(): Promise<{ success: boolean; synced: number; error?: string }> {
+  if (!(await isMasterAdmin())) return { success: false, synced: 0, error: MASTER_ERR };
   // Usa service role para contornar RLS nas escritas
   const supabase = getAdminClient();
 
@@ -81,6 +91,7 @@ export async function toggleGameEnabled(
   gameId: string,
   enabled: boolean
 ): Promise<{ success: boolean; error?: string }> {
+  if (!(await isMasterAdmin())) return { success: false, error: MASTER_ERR };
   const supabase = getAdminClient();
   const { error } = await supabase
     .from("games")
@@ -95,6 +106,7 @@ export async function toggleGamePredictionsEarly(
   gameId: string,
   early: boolean
 ): Promise<{ success: boolean; error?: string }> {
+  if (!(await isMasterAdmin())) return { success: false, error: MASTER_ERR };
   const supabase = getAdminClient();
   const { error } = await supabase
     .from("games")
@@ -110,6 +122,7 @@ export async function toggleGameRanking(
   gameId: string,
   visible: boolean
 ): Promise<{ success: boolean; error?: string }> {
+  if (!(await isMasterAdmin())) return { success: false, error: MASTER_ERR };
   const supabase = getAdminClient();
   const { error } = await supabase
     .from("games")
@@ -127,6 +140,7 @@ export async function updateGameResult(
   awayScore: number,
   possession: number
 ): Promise<{ success: boolean; error?: string }> {
+  if (!(await isMasterAdmin())) return { success: false, error: MASTER_ERR };
   const supabase = getAdminClient();
 
   // Override manual do admin: trava o jogo (auto-poll não sobrescreve mais)
@@ -155,6 +169,7 @@ export async function updateGameResult(
 export async function unlockGameResult(
   gameId: string
 ): Promise<{ success: boolean; error?: string }> {
+  if (!(await isMasterAdmin())) return { success: false, error: MASTER_ERR };
   const supabase = getAdminClient();
 
   const { error } = await supabase
@@ -172,9 +187,20 @@ export async function unlockGameResult(
   return { success: true };
 }
 
-export async function recalculateScores(): Promise<{ success: boolean; error?: string }> {
+export async function recalculateScores(tenantId?: string): Promise<{ success: boolean; error?: string }> {
   const supabase = getAdminClient();
 
+  // Sem tenant → recalcula TODOS os tenants (ex.: FT de um jogo compartilhado vale p/ todos)
+  if (!tenantId) {
+    const { data: tenants } = await supabase.from("tenants").select("id");
+    for (const t of ((tenants as { id: string }[] | null) ?? [])) {
+      await recalculateScores(t.id);
+    }
+    revalidatePath("/ranking");
+    return { success: true };
+  }
+
+  // Jogos são COMPARTILHADOS entre tenants → SEM filtro de tenant nas queries de games.
   // Jogos com resultado (para pontuação de palpites)
   const { data: gamesData } = await supabase
     .from("games")
@@ -187,16 +213,17 @@ export async function recalculateScores(): Promise<{ success: boolean; error?: s
   const { data: allGamesData } = await supabase.from("games").select("*");
   const allGames = (allGamesData as GameRow[] | null) ?? [];
 
-  const { data: predsData } = await supabase.from("predictions").select("*");
+  // Dados POR TENANT
+  const { data: predsData } = await supabase.from("predictions").select("*").eq("tenant_id", tenantId);
   const predictions = (predsData as PredictionRow[] | null) ?? [];
 
-  const { data: attData } = await supabase.from("attendances").select("*");
+  const { data: attData } = await supabase.from("attendances").select("*").eq("tenant_id", tenantId);
   const attendances = (attData as AttendanceRow[] | null) ?? [];
 
-  const { data: tpData } = await supabase.from("tournament_predictions").select("*");
+  const { data: tpData } = await supabase.from("tournament_predictions").select("*").eq("tenant_id", tenantId);
   const tournamentPredictions = (tpData as TournamentPredRow[] | null) ?? [];
 
-  const { data: allUsersData } = await supabase.from("users").select("id");
+  const { data: allUsersData } = await supabase.from("users").select("id").eq("tenant_id", tenantId);
   const allUsers = (allUsersData as { id: string }[] | null) ?? [];
 
   const userIds = new Set<string>([
@@ -374,8 +401,9 @@ export async function recalculateScores(): Promise<{ success: boolean; error?: s
     }
   }
 
-  const upserts: ScoreInsert[] = Object.entries(scoresByUser).map(([userId, pts]) => ({
+  const upserts = Object.entries(scoresByUser).map(([userId, pts]) => ({
     user_id: userId,
+    tenant_id: tenantId,
     attendance_pts: pts.attendance_pts,
     result_pts: pts.result_pts,
     exact_score_pts: pts.exact_score_pts,
@@ -402,14 +430,15 @@ export async function checkInUser(
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
+  const tenant = getTenantId();
 
   const { error } = await supabase
     .from("attendances")
-    .insert({ user_id: userId, game_id: gameId, verified_by: user?.id ?? null } as never);
+    .insert({ user_id: userId, game_id: gameId, verified_by: user?.id ?? null, tenant_id: tenant } as never);
 
   if (error) return { success: false, error: error.message };
 
-  await recalculateScores();
+  await recalculateScores(tenant);
   revalidatePath("/admin");
   return { success: true };
 }
@@ -420,7 +449,7 @@ export async function getLocationConfig(): Promise<{
   lat: number; lng: number; radiusM: number;
 }> {
   const supabase = getAdminClient();
-  const { data } = await supabase.from("app_config").select("key, value");
+  const { data } = await supabase.from("app_config").select("key, value").eq("tenant_id", getTenantId());
   const map = Object.fromEntries((data ?? []).map((r: { key: string; value: string }) => [r.key, r.value]));
   return {
     lat: parseFloat(map.restaurant_lat ?? "-23.550520"),
@@ -435,14 +464,15 @@ export async function saveLocationConfig(
   radiusM: number
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = getAdminClient();
+  const tenant = getTenantId();
   const rows = [
-    { key: "restaurant_lat",  value: String(lat),     updated_at: new Date().toISOString() },
-    { key: "restaurant_lng",  value: String(lng),     updated_at: new Date().toISOString() },
-    { key: "checkin_radius_m", value: String(radiusM), updated_at: new Date().toISOString() },
+    { tenant_id: tenant, key: "restaurant_lat",  value: String(lat),     updated_at: new Date().toISOString() },
+    { tenant_id: tenant, key: "restaurant_lng",  value: String(lng),     updated_at: new Date().toISOString() },
+    { tenant_id: tenant, key: "checkin_radius_m", value: String(radiusM), updated_at: new Date().toISOString() },
   ];
   const { error } = await supabase
     .from("app_config")
-    .upsert(rows as never[], { onConflict: "key" });
+    .upsert(rows as never[], { onConflict: "tenant_id,key" });
   if (error) return { success: false, error: error.message };
   revalidatePath("/admin");
   return { success: true };

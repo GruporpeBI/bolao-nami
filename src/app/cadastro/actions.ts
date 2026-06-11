@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
+import { getTenantId, tenantEmail } from "@/lib/tenant";
 
 function getAdminAuthClient() {
   return createServiceClient(
@@ -23,6 +24,7 @@ export async function checkCpfExists(
       .from("users")
       .select("id, name")
       .eq("cpf", clean)
+      .eq("tenant_id", getTenantId())
       .maybeSingle();
 
     if (data) return { found: true, name: (data as { id: string; name: string }).name };
@@ -39,18 +41,20 @@ export async function loginByCpf(
   if (clean.length !== 11) return { success: false, error: "CPF inválido." };
 
   const supabase = await createClient();
-  const email = `${clean}@bolao.internal`;
+  const tenant = getTenantId();
+  const email = tenantEmail(clean, tenant);
   const password = `bolao_${clean}_2026`;
 
   // Tenta login direto (usuário já tem conta Auth confirmada)
   const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
   if (!signInError) return { success: true };
 
-  // Sem conta Auth ainda — verifica se existe na tabela users
+  // Sem conta Auth ainda — verifica se existe na tabela users (deste tenant)
   const { data: dbUser } = await supabase
     .from("users")
     .select("id")
     .eq("cpf", clean)
+    .eq("tenant_id", tenant)
     .maybeSingle();
 
   if (!dbUser) return { success: false, error: "CPF não encontrado." };
@@ -61,7 +65,7 @@ export async function loginByCpf(
     email,
     password,
     email_confirm: true,
-    user_metadata: { users_table_id: (dbUser as { id: string }).id },
+    user_metadata: { users_table_id: (dbUser as { id: string }).id, tenant_id: tenant },
   });
 
   if (createError) return { success: false, error: "Erro ao criar sessão. Tente novamente." };
@@ -104,24 +108,27 @@ export async function registerUser(formData: {
 
   try {
     const supabase = await createClient();
+    const tenant = getTenantId();
 
     const { data: existing } = await supabase
       .from("users")
       .select("id")
       .eq("cpf", cleanCpf)
+      .eq("tenant_id", tenant)
       .maybeSingle();
 
     if (existing) {
       return { success: false, error: "Este CPF já está cadastrado." };
     }
 
-    // Insere na tabela users
+    // Insere na tabela users (deste tenant)
     const { error } = await supabase.from("users").insert({
       name: formData.name.trim(),
       phone: formData.phone.replace(/\D/g, ""),
       cpf: cleanCpf,
       birth_date: formData.birth_date,
       accepted_terms_at: new Date().toISOString(),
+      tenant_id: tenant,
     } as never);
 
     if (error) {
@@ -133,10 +140,11 @@ export async function registerUser(formData: {
       .from("users")
       .select("id")
       .eq("cpf", cleanCpf)
+      .eq("tenant_id", tenant)
       .maybeSingle();
 
     // Cria conta Auth com email já confirmado
-    const email = `${cleanCpf}@bolao.internal`;
+    const email = tenantEmail(cleanCpf, tenant);
     const password = `bolao_${cleanCpf}_2026`;
     const adminClient = getAdminAuthClient();
 
@@ -144,7 +152,7 @@ export async function registerUser(formData: {
       email,
       password,
       email_confirm: true,
-      user_metadata: { users_table_id: (newUser as { id: string } | null)?.id },
+      user_metadata: { users_table_id: (newUser as { id: string } | null)?.id, tenant_id: tenant },
     });
 
     // Faz login imediatamente após o cadastro
