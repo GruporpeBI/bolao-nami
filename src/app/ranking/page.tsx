@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import { IconTacaJules } from "@/components/icons";
 import Badge from "@/components/ui/Badge";
 import RankingTable from "./RankingTable";
 import { teamName } from "@/lib/team-names";
@@ -269,42 +268,45 @@ export default async function RankingPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#1A1A1A]">
-      <section className="bg-gradient-to-b from-[#004600] to-[#1A1A1A] px-6 py-14">
-        <div className="max-w-3xl mx-auto flex flex-col items-center gap-4 text-center">
-          <IconTacaJules width={56} height={84} />
-          <h1 className="text-4xl font-bold text-[#F6C900] uppercase tracking-tight">
+    <main className="min-h-screen bg-[#1A0C04]">
+      <section className="relative bg-[#0D0600] px-6 py-14 border-b border-[#F0EADD]/10 overflow-hidden nami-hero-grid">
+        <div className="relative z-10 max-w-3xl mx-auto flex flex-col items-center gap-4 text-center">
+          <img src="/nami/nami-13.png" alt="Troféu Nami" className="h-20 w-auto opacity-80" />
+          <h1 className="font-[var(--font-cond)] text-4xl font-black text-[#F0EADD] uppercase tracking-tight">
             Ranking
           </h1>
-          <p className="text-[#FAF6EB]/60 text-sm max-w-md">
-            Classificação dos 10 melhores do Bolão Copa 2026 — Mercearia Amauri
+          <p className="text-[#F0EADD]/55 text-sm max-w-md">
+            Classificação dos 10 melhores do Bolão Copa 2026 — Nami
           </p>
-          <Badge variant="green" className="text-xs">
-            Atualizado em tempo real
-          </Badge>
+          <div className="flex items-center gap-2">
+            <span className="live-dot" />
+            <span className="text-[#F0EADD]/45 text-xs font-bold uppercase tracking-[0.12em]">
+              Atualizado em tempo real
+            </span>
+          </div>
 
           {/* Placar ao vivo */}
           {liveGames.length > 0 && (
             <div className="flex flex-col gap-2 w-full max-w-sm mt-2">
               {liveGames.map((g) => (
-                <div key={g.id} className="bg-[#004600]/60 border border-green-500/30 rounded-sm px-4 py-3 flex flex-col gap-1">
+                <div key={g.id} className="bg-black/25 border border-[#F0EADD]/14 rounded-xl px-4 py-3 flex flex-col gap-1">
                   <div className="flex items-center justify-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse shrink-0" />
+                    <span className="live-dot" />
                     <span className="text-green-400 text-xs font-bold uppercase tracking-wider">
                       {g.status_description ?? "Ao vivo"}
                     </span>
                   </div>
                   <div className="flex items-center justify-center gap-3 mt-1">
-                    <span className="text-[#FAF6EB] font-semibold text-sm">{teamName(g.home_team)}</span>
-                    <span className="text-[#F6C900] font-black text-2xl">{g.home_score} × {g.away_score}</span>
-                    <span className="text-[#FAF6EB] font-semibold text-sm">{teamName(g.away_team)}</span>
+                    <span className="text-[#F0EADD] font-semibold text-sm">{teamName(g.home_team)}</span>
+                    <span className="font-[var(--font-cond)] text-[#D96D3A] font-black text-2xl">{g.home_score} × {g.away_score}</span>
+                    <span className="text-[#F0EADD] font-semibold text-sm">{teamName(g.away_team)}</span>
                   </div>
                   {g.live_possession_home != null && g.live_possession_home > 0 && g.live_possession_home < 100 && g.live_possession_home !== 50 && (
-                    <p className="text-[#FAF6EB]/50 text-xs text-center mt-0.5">
+                    <p className="text-[#F0EADD]/50 text-xs text-center mt-0.5">
                       {g.live_possession_home > 50
                         ? `${teamName(g.home_team)} ${g.live_possession_home}% posse`
                         : `${teamName(g.away_team)} ${100 - g.live_possession_home}% posse`}
-                      <span className="text-[#FAF6EB]/30"> · ao vivo</span>
+                      <span className="text-[#F0EADD]/30"> · ao vivo</span>
                     </p>
                   )}
                 </div>
@@ -318,7 +320,7 @@ export default async function RankingPage() {
         {top10.length === 0 && gameRankings.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
             <Badge variant="dark">Em breve</Badge>
-            <p className="text-[#FAF6EB]/50 text-lg">
+            <p className="text-[#F0EADD]/50 text-lg">
               O ranking será exibido assim que os participantes se cadastrarem.
             </p>
           </div>

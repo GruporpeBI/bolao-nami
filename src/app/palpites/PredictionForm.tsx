@@ -40,7 +40,7 @@ function ScoreInput({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-sm font-semibold text-[#F6C900] uppercase tracking-wider">{label}</label>
+      <label className="text-xs font-bold text-[#D96D3A] uppercase tracking-[0.12em]">{label}</label>
       <input
         type="text"
         inputMode="numeric"
@@ -50,7 +50,7 @@ function ScoreInput({
         disabled={disabled}
         placeholder="0"
         maxLength={2}
-        className={`w-20 text-center bg-[#1A1A1A] border ${error ? "border-red-500" : "border-[#F6C900]/30"} text-[#FAF6EB] rounded-sm px-2 py-3 text-xl font-bold outline-none focus:border-[#F6C900] transition-colors placeholder:text-[#FAF6EB]/30 disabled:opacity-50`}
+        className={`w-20 text-center bg-[#F0EADD]/[0.07] border-[1.5px] ${error ? "border-red-500" : "border-[#F0EADD]/14"} text-[#F0EADD] rounded-md px-2 py-3 text-2xl font-black outline-none focus:border-[#CC5723] focus:shadow-[0_0_0_3px_rgba(204,87,35,0.15)] transition-all placeholder:text-[#F0EADD]/25 disabled:opacity-30`}
       />
       {error && <span className="text-red-400 text-xs">{error}</span>}
     </div>
@@ -82,7 +82,7 @@ function PossessionInput({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-sm font-semibold text-[#F6C900] uppercase tracking-wider">{label}</label>
+      <label className="text-xs font-bold text-[#D96D3A] uppercase tracking-[0.12em]">{label}</label>
       <div className="flex items-center gap-2">
         <input
           type="text"
@@ -93,9 +93,9 @@ function PossessionInput({
           disabled={disabled}
           placeholder="50"
           maxLength={3}
-          className={`w-20 text-center bg-[#1A1A1A] border ${error ? "border-red-500" : "border-[#F6C900]/30"} text-[#FAF6EB] rounded-sm px-2 py-3 text-xl font-bold outline-none focus:border-[#F6C900] transition-colors placeholder:text-[#FAF6EB]/30 disabled:opacity-50`}
+          className={`w-20 text-center bg-[#F0EADD]/[0.07] border-[1.5px] ${error ? "border-red-500" : "border-[#F0EADD]/14"} text-[#F0EADD] rounded-md px-2 py-3 text-2xl font-black outline-none focus:border-[#CC5723] focus:shadow-[0_0_0_3px_rgba(204,87,35,0.15)] transition-all placeholder:text-[#F0EADD]/25 disabled:opacity-30`}
         />
-        <span className="text-[#FAF6EB]/40 text-sm">%</span>
+        <span className="text-[#F0EADD]/40 text-sm">%</span>
       </div>
       {error && <span className="text-red-400 text-xs">{error}</span>}
     </div>
@@ -126,25 +126,25 @@ export default function PredictionForm({
 
   if (existingPrediction) {
     return (
-      <div className="mt-4 border-t border-[#F6C900]/10 pt-4">
-        <p className="text-xs text-[#FAF6EB]/50 uppercase tracking-wider mb-3">Seu palpite</p>
+      <div className="mt-4 border-t border-[#F0EADD]/10 pt-4">
+        <p className="text-xs text-[#F0EADD]/50 uppercase tracking-wider mb-3">Seu palpite</p>
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-3">
-            <span className="text-[#FAF6EB]/70 text-sm">{homeTeam}</span>
-            <span className="text-[#F6C900] font-bold text-xl">
+            <span className="text-[#F0EADD]/70 text-sm">{homeTeam}</span>
+            <span className="font-[var(--font-cond)] text-[#D96D3A] font-black text-xl">
               {existingPrediction.home_score_pred} × {existingPrediction.away_score_pred}
             </span>
-            <span className="text-[#FAF6EB]/70 text-sm">{awayTeam}</span>
+            <span className="text-[#F0EADD]/70 text-sm">{awayTeam}</span>
           </div>
           <div className="ml-auto flex items-center gap-2 text-sm">
-            <span className="text-[#FAF6EB]/40">Posse</span>
-            <span className="bg-[#004600] text-[#F6C900] font-bold px-2 py-0.5 rounded-sm text-xs">
+            <span className="text-[#F0EADD]/40">Posse</span>
+            <span className="bg-[#CC5723]/20 text-[#D96D3A] border border-[#CC5723]/35 font-bold px-2 py-0.5 rounded-full text-xs">
               {homeTeam}
             </span>
-            <span className="text-[#F6C900] font-bold">{existingPrediction.possession_pred}%</span>
+            <span className="text-[#D96D3A] font-bold">{existingPrediction.possession_pred}%</span>
           </div>
         </div>
-        <p className="text-xs text-[#FAF6EB]/30 mt-2">Palpite já enviado — não é possível editar.</p>
+        <p className="text-xs text-[#F0EADD]/30 mt-2">Palpite já enviado — não é possível editar.</p>
       </div>
     );
   }
@@ -187,22 +187,22 @@ export default function PredictionForm({
   const selectedTeamName = possessionTeam === "home" ? homeTeam : awayTeam;
 
   return (
-    <form onSubmit={handleSubmit} className="mt-4 border-t border-[#F6C900]/10 pt-4 flex flex-col gap-5">
-      <p className="text-xs text-[#FAF6EB]/50 uppercase tracking-wider">Seu palpite</p>
+    <form onSubmit={handleSubmit} className="mt-4 border-t border-[#F0EADD]/10 pt-4 flex flex-col gap-5">
+      <p className="text-xs text-[#F0EADD]/50 uppercase tracking-wider">Seu palpite</p>
 
       {/* Placar */}
-      <div className="flex flex-wrap gap-4 items-end">
+      <div className="flex flex-wrap gap-4 items-end justify-center">
         <ScoreInput label={homeTeam} value={homeScore} onChange={setHomeScore} disabled={isDisabled} error={errors.homeScore} />
-        <span className="text-[#F6C900] font-bold text-2xl pb-3">×</span>
+        <span className="font-[var(--font-cond)] text-[#F0EADD]/25 font-black text-2xl pb-3">×</span>
         <ScoreInput label={awayTeam} value={awayScore} onChange={setAwayScore} disabled={isDisabled} error={errors.awayScore} />
       </div>
 
       {/* Posse de bola */}
       <div className="flex flex-col gap-2">
-        <span className="text-xs font-semibold text-[#F6C900] uppercase tracking-wider">
+        <span className="text-xs font-bold text-[#D96D3A] uppercase tracking-[0.12em]">
           Posse de bola (%)
         </span>
-        <p className="text-xs text-[#FAF6EB]/40 -mt-1">De qual time você quer prever a posse?</p>
+        <p className="text-xs text-[#F0EADD]/40 -mt-1">De qual time você quer prever a posse?</p>
 
         <div className="flex gap-2">
           {(["home", "away"] as const).map((side) => {
@@ -214,10 +214,10 @@ export default function PredictionForm({
                 type="button"
                 onClick={() => setPossessionTeam(side)}
                 disabled={isDisabled}
-                className={`px-4 py-2 rounded-sm text-sm font-semibold border transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                className={`px-4 py-2 rounded-md text-sm font-semibold border transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                   active
-                    ? "bg-[#F6C900] border-[#F6C900] text-[#1A1A1A]"
-                    : "bg-transparent border-[#F6C900]/30 text-[#FAF6EB]/60 hover:border-[#F6C900]/60"
+                    ? "bg-[#CC5723] border-[#CC5723] text-white"
+                    : "bg-transparent border-[#F0EADD]/20 text-[#F0EADD]/60 hover:border-[#CC5723]/60"
                 }`}
               >
                 {name}

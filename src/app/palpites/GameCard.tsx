@@ -108,17 +108,17 @@ export default function GameCard({
   return (
     <Card
       variant="dark"
-      className={`p-5 ${isOpen ? "ring-1 ring-[#F6C900]/70 border-[#F6C900]/60" : ""}`}
+      className={`p-5 ${isOpen ? "ring-1 ring-[#CC5723]/70 border-[#CC5723]/60 bg-gradient-to-br from-[#CC5723]/10 to-[#251008]" : ""}`}
     >
       <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
         <div className="flex items-center gap-2">
-          <span className="text-[#FAF6EB]/50 text-xs uppercase tracking-wider">
+          <span className="text-[#F0EADD]/50 text-xs uppercase tracking-wider">
             {stageLabel[game.stage] ?? game.stage}
           </span>
-          {game.is_brazil_game && <Badge variant="green">Brasil</Badge>}
+          {game.is_brazil_game && <Badge variant="green">🇧🇷 Brasil</Badge>}
           {game.is_final && <Badge variant="gold">Final</Badge>}
         </div>
-        <span className="text-[#FAF6EB]/50 text-xs">
+        <span className="text-[#F0EADD]/50 text-xs">
           {dateStr} às {timeStr}
         </span>
       </div>
@@ -126,7 +126,7 @@ export default function GameCard({
       <div className="flex items-center justify-between gap-4 my-4">
         {/* Home */}
         <div className="flex items-center justify-end gap-2 flex-1">
-          <span className="text-[#FAF6EB] font-semibold text-lg text-right">{homeTeam}</span>
+          <span className="font-[var(--font-cond)] text-[#D96D3A] font-black text-lg uppercase tracking-wide text-right">{homeTeam}</span>
           {homeFlagUrl && (
             <img src={homeFlagUrl} alt={homeTeam} className="w-6 h-6 rounded-sm object-cover flex-shrink-0" />
           )}
@@ -135,17 +135,17 @@ export default function GameCard({
         {/* Placar ou × */}
         {hasResult ? (
           <div className="flex flex-col items-center shrink-0">
-            <span className="text-[#F6C900] font-black text-3xl tabular-nums leading-none">
+            <span className="font-[var(--font-cond)] text-[#D96D3A] font-black text-3xl tabular-nums leading-none">
               {game.home_score} – {game.away_score}
             </span>
             {poss && (
-              <span className="text-[#FAF6EB]/35 text-[10px] mt-0.5 font-normal">
+              <span className="text-[#F0EADD]/35 text-[10px] mt-0.5 font-normal">
                 {poss.team} {poss.pct}% posse
               </span>
             )}
           </div>
         ) : (
-          <span className="text-[#F6C900] font-black text-2xl shrink-0">×</span>
+          <span className="font-[var(--font-cond)] text-[#F0EADD]/25 font-black text-2xl shrink-0">×</span>
         )}
 
         {/* Away */}
@@ -153,19 +153,19 @@ export default function GameCard({
           {awayFlagUrl && (
             <img src={awayFlagUrl} alt={awayTeam} className="w-6 h-6 rounded-sm object-cover flex-shrink-0" />
           )}
-          <span className="text-[#FAF6EB] font-semibold text-lg text-left">{awayTeam}</span>
+          <span className="font-[var(--font-cond)] text-[#F0EADD] font-black text-lg uppercase tracking-wide text-left">{awayTeam}</span>
         </div>
       </div>
 
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-2">
           {isPastDeadline ? (
-            <span className="text-xs text-red-500 font-bold uppercase tracking-wider">
+            <span className="text-xs text-red-400 font-bold uppercase tracking-wider">
               Encerrado
             </span>
           ) : isPredictionDay ? (
             <>
-              <span className="text-[#FAF6EB]/50 text-xs shrink-0">Fecha em:</span>
+              <span className="text-[#F0EADD]/50 text-xs shrink-0">Fecha em:</span>
               <CountdownTimer target={deadline} />
             </>
           ) : (
@@ -187,26 +187,26 @@ export default function GameCard({
 
       {/* Aviso: palpite só no dia do jogo */}
       {!isPredictionDay && !existingPrediction && !isPastDeadline && (
-        <p className="text-xs text-[#FAF6EB]/40 mt-2">
+        <p className="text-xs text-[#F0EADD]/40 mt-2">
           Este palpite poderá ser feito no dia do jogo.
         </p>
       )}
 
       {/* Aviso quando torneio não preenchido */}
       {needsTournament && (
-        <p className="text-xs text-[#F6C900]/70 border border-[#F6C900]/20 rounded-sm px-3 py-2 mt-3">
-          Preencha os <span className="font-bold text-[#F6C900]">Palpites do Torneio</span> acima antes de enviar palpites de jogo.
+        <p className="text-xs text-[#D96D3A]/80 border border-[#CC5723]/25 rounded-md px-3 py-2 mt-3">
+          Preencha os <span className="font-bold text-[#D96D3A]">Palpites do Torneio</span> acima antes de enviar palpites de jogo.
         </p>
       )}
 
       {/* Palpite do usuário quando jogo já tem resultado */}
       {hasResult && existingPrediction && (
-        <div className="mt-3 border-t border-[#F6C900]/10 pt-3">
-          <p className="text-[#FAF6EB]/40 text-xs uppercase tracking-wider mb-1.5">
+        <div className="mt-3 border-t border-[#F0EADD]/10 pt-3">
+          <p className="text-[#F0EADD]/40 text-xs uppercase tracking-wider mb-1.5">
             Seu palpite
           </p>
           <div className="flex items-center gap-2">
-            <span className="text-[#FAF6EB]/70 font-semibold text-base tabular-nums">
+            <span className="text-[#F0EADD]/70 font-semibold text-base tabular-nums">
               {existingPrediction.home_score_pred} – {existingPrediction.away_score_pred}
             </span>
             {existingPrediction.home_score_pred === game.home_score &&

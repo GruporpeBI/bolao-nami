@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { IconEscudo } from "@/components/icons";
 
 export default function NavBar() {
   const pathname = usePathname();
@@ -11,15 +10,15 @@ export default function NavBar() {
   if (pathname === "/" || pathname.startsWith("/admin") || pathname.startsWith("/preview")) return null;
 
   return (
-    <nav className="sticky top-0 z-50 bg-[#1A1A1A]/95 backdrop-blur-sm border-b border-[#F6C900]/10">
-      <div className="max-w-5xl mx-auto px-4 h-12 flex items-center gap-3">
+    <nav className="sticky top-0 z-50 bg-[#0D0600]/85 backdrop-blur-md border-b border-[#F0EADD]/10">
+      <div className="max-w-5xl mx-auto px-6 h-14 flex items-center gap-4">
         <Link
           href="/"
-          className="flex items-center gap-2 text-[#FAF6EB]/60 hover:text-[#F6C900] transition-colors text-sm font-semibold group"
+          className="flex items-center gap-2 text-[#F0EADD]/55 hover:text-[#F0EADD] transition-colors text-xs font-bold uppercase tracking-[0.12em] group"
         >
           <svg
-            width="16"
-            height="16"
+            width="14"
+            height="14"
             viewBox="0 0 16 16"
             fill="none"
             className="group-hover:-translate-x-0.5 transition-transform"
@@ -35,13 +34,11 @@ export default function NavBar() {
           Início
         </Link>
 
-        <div className="h-4 w-px bg-[#F6C900]/15" />
+        <div className="flex-1 h-px bg-[#F0EADD]/10" />
 
-        <Link href="/" className="flex items-center gap-1.5 opacity-50 hover:opacity-100 transition-opacity">
-          <IconEscudo width={16} height={27} />
-          <span className="text-[#F6C900] text-xs font-bold uppercase tracking-wider hidden sm:block">
-            Copa no Merça
-          </span>
+        <Link href="/" className="nami-logo nami-logo--on-preto nami-logo--sm">
+          <span className="nami-logo__name">Nami</span>
+          <span className="nami-logo__sub">Copa 2026</span>
         </Link>
       </div>
     </nav>

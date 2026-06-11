@@ -99,7 +99,7 @@ function ScoreInput({
       disabled={disabled}
       placeholder="0"
       maxLength={2}
-      className="w-14 text-center bg-[#1A1A1A] border border-[#F6C900]/30 text-[#FAF6EB] rounded-sm py-2 text-lg font-bold outline-none focus:border-[#F6C900] disabled:opacity-40"
+      className="w-14 text-center bg-[#0D0600] border border-[#CC5723]/30 text-[#F0EADD] rounded-sm py-2 text-lg font-bold outline-none focus:border-[#CC5723] disabled:opacity-40"
     />
   );
 }
@@ -112,7 +112,7 @@ function TeamSelect({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       disabled={disabled}
-      className="bg-[#1A1A1A] border border-[#F6C900]/30 text-[#FAF6EB] rounded-sm px-3 py-2 text-sm outline-none focus:border-[#F6C900] disabled:opacity-40 min-w-[140px]"
+      className="bg-[#0D0600] border border-[#CC5723]/30 text-[#F0EADD] rounded-sm px-3 py-2 text-sm outline-none focus:border-[#CC5723] disabled:opacity-40 min-w-[140px]"
     >
       <option value="">Selecione...</option>
       {WC_2026_TEAMS.filter((t) => !(exclude ?? []).includes(t)).map((t) => (
@@ -126,11 +126,11 @@ function WinnerBadge({ team, isDraw }: { team: string; isDraw: boolean }) {
   if (!team) return null;
   return (
     <div className="flex items-center gap-2 mt-2">
-      <div className={`h-px flex-1 ${isDraw ? "bg-yellow-500/40" : "bg-[#F6C900]/20"}`} />
-      <span className={`text-xs font-bold px-3 py-1 rounded-sm ${isDraw ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/40" : "bg-[#004600] text-[#F6C900] border border-[#F6C900]/30"}`}>
+      <div className={`h-px flex-1 ${isDraw ? "bg-yellow-500/40" : "bg-[#CC5723]/20"}`} />
+      <span className={`text-xs font-bold px-3 py-1 rounded-full ${isDraw ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/40" : "bg-[#CC5723]/20 text-[#D96D3A] border border-[#CC5723]/35"}`}>
         {isDraw ? "⚠ Empate — escolha quem avança" : `→ ${team}`}
       </span>
-      <div className={`h-px flex-1 ${isDraw ? "bg-yellow-500/40" : "bg-[#F6C900]/20"}`} />
+      <div className={`h-px flex-1 ${isDraw ? "bg-yellow-500/40" : "bg-[#CC5723]/20"}`} />
     </div>
   );
 }
@@ -139,7 +139,7 @@ export default function TournamentPredictions({ disabled, existing, tournamentDe
   // Prazo encerrado: se 3+ jogos Copa Brasil finalizados e usuário não preencheu
   if (tournamentDeadlinePassed && !existing) {
     return (
-      <div className="border border-[#F6C900]/10 rounded-sm px-5 py-4 text-[#FAF6EB]/40 text-sm">
+      <div className="border border-[#CC5723]/10 rounded-sm px-5 py-4 text-[#F0EADD]/40 text-sm">
         Palpites do torneio não estão mais disponíveis — prazo encerrado após os 3 primeiros jogos do Brasil.
       </div>
     );
@@ -220,7 +220,7 @@ export default function TournamentPredictions({ disabled, existing, tournamentDe
     else { setStatus("error"); setMessage(result.error ?? "Erro ao salvar."); }
   }
 
-  const selectClass = "bg-[#1A1A1A] border border-[#F6C900]/30 text-[#FAF6EB] rounded-sm px-3 py-2 text-sm outline-none focus:border-[#F6C900] disabled:opacity-40";
+  const selectClass = "bg-[#0D0600] border border-[#CC5723]/30 text-[#F0EADD] rounded-sm px-3 py-2 text-sm outline-none focus:border-[#CC5723] disabled:opacity-40";
 
   if (existing && lock) {
     const Flag = ({ name }: { name: string }) => {
@@ -232,52 +232,52 @@ export default function TournamentPredictions({ disabled, existing, tournamentDe
     const TeamName = ({ name }: { name: string }) => (
       <span className="flex items-center gap-1.5">
         <Flag name={name} />
-        <span className="text-[#FAF6EB] font-semibold text-sm">{name}</span>
+        <span className="text-[#F0EADD] font-semibold text-sm">{name}</span>
       </span>
     );
 
     return (
       <Card variant="dark" className="p-5 flex flex-col gap-5">
-        <p className="text-xs text-[#FAF6EB]/50 uppercase tracking-wider">Palpites do Torneio — Enviados</p>
+        <p className="text-xs text-[#F0EADD]/50 uppercase tracking-wider">Palpites do Torneio — Enviados</p>
         <div className="flex flex-col gap-4">
           {[
             { label: "Semifinal 1", a: existing.semi1, sa: existing.sf1_score_a, sb: existing.sf1_score_b, b: existing.semi2, winner: existing.finalist1 },
             { label: "Semifinal 2", a: existing.semi3, sa: existing.sf2_score_a, sb: existing.sf2_score_b, b: existing.semi4, winner: existing.finalist2 },
           ].map((sf) => (
             <div key={sf.label} className="flex flex-col gap-1.5">
-              <span className="text-[#FAF6EB]/40 text-xs uppercase tracking-wider">{sf.label}</span>
+              <span className="text-[#F0EADD]/40 text-xs uppercase tracking-wider">{sf.label}</span>
               <div className="flex flex-wrap items-center gap-2">
                 <TeamName name={sf.a} />
-                <span className="text-[#F6C900] font-black">{sf.sa} × {sf.sb}</span>
+                <span className="text-[#CC5723] font-black">{sf.sa} × {sf.sb}</span>
                 <TeamName name={sf.b} />
-                <span className="flex items-center gap-1 text-xs bg-[#004600] text-[#F6C900] px-2 py-0.5 rounded-sm">
+                <span className="flex items-center gap-1 text-xs bg-[#CC5723]/20 text-[#D96D3A] border border-[#CC5723]/35 px-2 py-0.5 rounded-full">
                   → <Flag name={sf.winner} /><span>{sf.winner}</span>
                 </span>
               </div>
             </div>
           ))}
-          <div className="border-t border-[#F6C900]/10 pt-3">
-            <span className="text-[#FAF6EB]/40 text-xs uppercase tracking-wider">Final</span>
+          <div className="border-t border-[#CC5723]/10 pt-3">
+            <span className="text-[#F0EADD]/40 text-xs uppercase tracking-wider">Final</span>
             <div className="flex flex-wrap items-center gap-2 mt-1">
               <TeamName name={existing.finalist1} />
-              <span className="text-[#F6C900] font-black">{existing.final_score_a} × {existing.final_score_b}</span>
+              <span className="text-[#CC5723] font-black">{existing.final_score_a} × {existing.final_score_b}</span>
               <TeamName name={existing.finalist2} />
             </div>
             {existing.possession_pred_final != null && (
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-[#FAF6EB]/40 text-xs">Posse da final:</span>
-                <span className="text-[#FAF6EB]/70 text-xs font-bold">{existing.possession_pred_final}% — {existing.finalist1}</span>
+                <span className="text-[#F0EADD]/40 text-xs">Posse da final:</span>
+                <span className="text-[#F0EADD]/70 text-xs font-bold">{existing.possession_pred_final}% — {existing.finalist1}</span>
               </div>
             )}
             <div className="flex items-center gap-2 mt-2">
-              <span className="text-[#FAF6EB]/40 text-xs">Campeão:</span>
-              <span className="flex items-center gap-1.5 text-[#F6C900] font-bold">
+              <span className="text-[#F0EADD]/40 text-xs">Campeão:</span>
+              <span className="flex items-center gap-1.5 text-[#CC5723] font-bold">
                 <img src="/api/flag/wc-logo" alt="Copa" style={{width:20,height:20,objectFit:"cover",borderRadius:3,flexShrink:0,display:"inline-block",verticalAlign:"middle"}} /> <Flag name={existing.champion} />{existing.champion}
               </span>
             </div>
           </div>
         </div>
-        <p className="text-xs text-[#FAF6EB]/30">Palpites do torneio enviados e bloqueados.</p>
+        <p className="text-xs text-[#F0EADD]/30">Palpites do torneio enviados e bloqueados.</p>
       </Card>
     );
   }
@@ -286,17 +286,17 @@ export default function TournamentPredictions({ disabled, existing, tournamentDe
     <form onSubmit={handleSubmit}>
       <Card variant="dark" className="p-5 flex flex-col gap-7">
         <div>
-          <p className="text-xs text-[#FAF6EB]/50 uppercase tracking-wider mb-0.5">Palpites do Torneio</p>
-          <p className="text-[#FAF6EB]/30 text-xs">Obrigatório — preencha antes de enviar palpites de jogo.</p>
+          <p className="text-xs text-[#F0EADD]/50 uppercase tracking-wider mb-0.5">Palpites do Torneio</p>
+          <p className="text-[#F0EADD]/30 text-xs">Obrigatório — preencha antes de enviar palpites de jogo.</p>
         </div>
 
         {/* ── SEMIFINAL 1 ── */}
         <div className="flex flex-col gap-3">
-          <span className="text-sm font-bold text-[#F6C900] uppercase tracking-wider">Semifinal 1</span>
+          <span className="text-sm font-bold text-[#CC5723] uppercase tracking-wider">Semifinal 1</span>
           <div className="flex flex-wrap items-center gap-3">
             <TeamSelect value={semi1} onChange={setSemi1} disabled={lock} exclude={[semi2, semi3, semi4]} />
             <ScoreInput value={sf1A} onChange={setSf1A} disabled={lock || !semi1} />
-            <span className="text-[#F6C900] font-black text-xl">×</span>
+            <span className="text-[#CC5723] font-black text-xl">×</span>
             <ScoreInput value={sf1B} onChange={setSf1B} disabled={lock || !semi2} />
             <TeamSelect value={semi2} onChange={setSemi2} disabled={lock} exclude={[semi1, semi3, semi4]} />
           </div>
@@ -317,11 +317,11 @@ export default function TournamentPredictions({ disabled, existing, tournamentDe
 
         {/* ── SEMIFINAL 2 ── */}
         <div className="flex flex-col gap-3">
-          <span className="text-sm font-bold text-[#F6C900] uppercase tracking-wider">Semifinal 2</span>
+          <span className="text-sm font-bold text-[#CC5723] uppercase tracking-wider">Semifinal 2</span>
           <div className="flex flex-wrap items-center gap-3">
             <TeamSelect value={semi3} onChange={setSemi3} disabled={lock} exclude={[semi1, semi2, semi4]} />
             <ScoreInput value={sf2A} onChange={setSf2A} disabled={lock || !semi3} />
-            <span className="text-[#F6C900] font-black text-xl">×</span>
+            <span className="text-[#CC5723] font-black text-xl">×</span>
             <ScoreInput value={sf2B} onChange={setSf2B} disabled={lock || !semi4} />
             <TeamSelect value={semi4} onChange={setSemi4} disabled={lock} exclude={[semi1, semi2, semi3]} />
           </div>
@@ -342,14 +342,14 @@ export default function TournamentPredictions({ disabled, existing, tournamentDe
 
         {/* ── FINAL ── */}
         {finalReady && (
-          <div className="flex flex-col gap-3 border-t border-[#F6C900]/20 pt-5">
-            <span className="text-sm font-bold text-[#F6C900] uppercase tracking-wider"><img src="/api/flag/wc-logo" alt="Copa" style={{width:20,height:20,objectFit:"cover",borderRadius:3,flexShrink:0,display:"inline-block",verticalAlign:"middle"}} /> Final</span>
+          <div className="flex flex-col gap-3 border-t border-[#CC5723]/20 pt-5">
+            <span className="text-sm font-bold text-[#CC5723] uppercase tracking-wider"><img src="/api/flag/wc-logo" alt="Copa" style={{width:20,height:20,objectFit:"cover",borderRadius:3,flexShrink:0,display:"inline-block",verticalAlign:"middle"}} /> Final</span>
             <div className="flex flex-wrap items-center gap-3">
-              <span className="text-[#FAF6EB] font-semibold text-sm min-w-[120px]">{finalist1}</span>
+              <span className="text-[#F0EADD] font-semibold text-sm min-w-[120px]">{finalist1}</span>
               <ScoreInput value={finalA} onChange={setFinalA} disabled={lock} />
-              <span className="text-[#F6C900] font-black text-xl">×</span>
+              <span className="text-[#CC5723] font-black text-xl">×</span>
               <ScoreInput value={finalB} onChange={setFinalB} disabled={lock} />
-              <span className="text-[#FAF6EB] font-semibold text-sm min-w-[120px]">{finalist2}</span>
+              <span className="text-[#F0EADD] font-semibold text-sm min-w-[120px]">{finalist2}</span>
             </div>
 
             {finalDraw && finalist1 && finalist2 && (
@@ -365,7 +365,7 @@ export default function TournamentPredictions({ disabled, existing, tournamentDe
 
             {/* Posse de bola — Final */}
             <div className="flex flex-col gap-2 mt-1">
-              <span className="text-xs font-semibold text-[#F6C900] uppercase tracking-wider">Posse de bola — Final (%)</span>
+              <span className="text-xs font-semibold text-[#CC5723] uppercase tracking-wider">Posse de bola — Final (%)</span>
               <div className="flex gap-2">
                 {(["home", "away"] as const).map((side) => {
                   const teamLabel = side === "home" ? finalist1 : finalist2;
@@ -377,8 +377,8 @@ export default function TournamentPredictions({ disabled, existing, tournamentDe
                       onClick={() => setFinalPossessionTeam(side)}
                       disabled={lock}
                       className={`px-3 py-1.5 rounded-sm text-xs font-bold border transition-all disabled:opacity-40 ${
-                        active ? "bg-[#F6C900] border-[#F6C900] text-[#1A1A1A]"
-                          : "bg-transparent border-[#F6C900]/30 text-[#FAF6EB]/60 hover:border-[#F6C900]/60"
+                        active ? "bg-[#CC5723] border-[#CC5723] text-white"
+                          : "bg-transparent border-[#F0EADD]/20 text-[#F0EADD]/60 hover:border-[#CC5723]/60"
                       }`}
                     >
                       {teamLabel || (side === "home" ? "Finalista 1" : "Finalista 2")}
@@ -402,26 +402,26 @@ export default function TournamentPredictions({ disabled, existing, tournamentDe
                   disabled={lock}
                   placeholder="50"
                   maxLength={3}
-                  className="w-16 text-center bg-[#1A1A1A] border border-[#F6C900]/30 text-[#FAF6EB] rounded-sm py-2 text-base font-bold outline-none focus:border-[#F6C900] disabled:opacity-40"
+                  className="w-16 text-center bg-[#0D0600] border border-[#CC5723]/30 text-[#F0EADD] rounded-sm py-2 text-base font-bold outline-none focus:border-[#CC5723] disabled:opacity-40"
                 />
-                <span className="text-[#FAF6EB]/40 text-sm">% (mín. 50%)</span>
+                <span className="text-[#F0EADD]/40 text-sm">% (mín. 50%)</span>
               </div>
             </div>
 
             {champion && (
-              <div className="flex items-center gap-3 mt-1 bg-[#F6C900]/10 border border-[#F6C900]/30 rounded-sm px-4 py-3">
-                <span className="text-[#FAF6EB]/60 text-sm">Campeão:</span>
-                <span className="text-[#F6C900] font-black text-lg"><img src="/api/flag/wc-logo" alt="Copa" style={{width:20,height:20,objectFit:"cover",borderRadius:3,flexShrink:0,display:"inline-block",verticalAlign:"middle"}} /> {champion}</span>
+              <div className="flex items-center gap-3 mt-1 bg-[#CC5723]/10 border border-[#CC5723]/30 rounded-sm px-4 py-3">
+                <span className="text-[#F0EADD]/60 text-sm">Campeão:</span>
+                <span className="text-[#CC5723] font-black text-lg"><img src="/api/flag/wc-logo" alt="Copa" style={{width:20,height:20,objectFit:"cover",borderRadius:3,flexShrink:0,display:"inline-block",verticalAlign:"middle"}} /> {champion}</span>
               </div>
             )}
           </div>
         )}
 
         {!finalReady && (
-          <div className="flex items-center gap-3 border-t border-[#F6C900]/10 pt-4">
-            <div className="h-px flex-1 bg-[#F6C900]/10" />
-            <span className="text-[#FAF6EB]/20 text-xs">Final disponível após preencher as semifinais</span>
-            <div className="h-px flex-1 bg-[#F6C900]/10" />
+          <div className="flex items-center gap-3 border-t border-[#CC5723]/10 pt-4">
+            <div className="h-px flex-1 bg-[#CC5723]/10" />
+            <span className="text-[#F0EADD]/20 text-xs">Final disponível após preencher as semifinais</span>
+            <div className="h-px flex-1 bg-[#CC5723]/10" />
           </div>
         )}
 

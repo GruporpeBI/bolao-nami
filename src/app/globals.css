@@ -1,19 +1,50 @@
 @import "tailwindcss";
 
-:root {
-  --gold:        #F6C900;
-  --gold-dark:   #D4A800;
-  --green-dark:  #004600;
-  --green-forest:#006837;
-  --black:       #1A1A1A;
-  --cream:       #FAF6EB;
-  --cream-dark:  #F0EAD6;
+/* ═══════════════════════════════════════════════════
+   NAMI — Design System · Bolão Copa do Mundo 2026
+   Terracotta #CC5723 · Creme #F0EADD · Preto #1A0C04
+   Fontes: Roboto Condensed · Pacifico
+   ═══════════════════════════════════════════════════ */
 
-  --background:  var(--black);
-  --foreground:  var(--cream);
+:root {
+  --nami-preto:      #1A0C04;
+  --nami-preto-dk:   #0D0600;
+  --nami-preto-md:   #251008;
+  --nami-preto-lt:   #3A1C0C;
+  --nami-laranja:    #CC5723;
+  --nami-laranja-lt: #D96D3A;
+  --nami-laranja-dk: #A84418;
+  --nami-creme:      #F0EADD;
+  --nami-creme-dk:   #DDD4C3;
+  --nami-creme-2:    #F8F4EC;
+  --nami-text-dark:  #0D0600;
+  --nami-text-mid:   #3A1C0C;
+
+  --background: var(--nami-preto);
+  --foreground: var(--nami-creme);
+
+  /* legacy aliases (kept so any stray references resolve to Nami palette) */
+  --gold:        var(--nami-laranja-lt);
+  --gold-dark:   var(--nami-laranja-dk);
+  --green-dark:  var(--nami-preto-md);
+  --green-forest:var(--nami-preto-lt);
+  --black:       var(--nami-preto);
+  --cream:       var(--nami-creme);
+  --cream-dark:  var(--nami-creme-dk);
 }
 
 @theme inline {
+  --color-nami-preto:      var(--nami-preto);
+  --color-nami-preto-dk:   var(--nami-preto-dk);
+  --color-nami-preto-md:   var(--nami-preto-md);
+  --color-nami-preto-lt:   var(--nami-preto-lt);
+  --color-nami-laranja:    var(--nami-laranja);
+  --color-nami-laranja-lt: var(--nami-laranja-lt);
+  --color-nami-laranja-dk: var(--nami-laranja-dk);
+  --color-nami-creme:      var(--nami-creme);
+  --color-nami-creme-dk:   var(--nami-creme-dk);
+  --color-nami-creme-2:    var(--nami-creme-2);
+
   --color-gold:         var(--gold);
   --color-gold-dark:    var(--gold-dark);
   --color-green-dark:   var(--green-dark);
@@ -24,8 +55,9 @@
   --color-background:   var(--background);
   --color-foreground:   var(--foreground);
 
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans:   var(--font-roboto-cond), "Helvetica Neue", Arial, sans-serif;
+  --font-cond:   var(--font-roboto-cond), "Arial Narrow", Impact, sans-serif;
+  --font-script: var(--font-pacifico), cursive;
 }
 
 * {
@@ -35,11 +67,62 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-roboto-cond), "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--black); }
-::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 3px; }
+::-webkit-scrollbar-track { background: var(--nami-preto-dk); }
+::-webkit-scrollbar-thumb { background: var(--nami-laranja); border-radius: 3px; }
+
+/* ── Logo Nami ── */
+.nami-logo { display:inline-flex; flex-direction:column; align-items:center; gap:0; line-height:1; }
+.nami-logo__name { font-family:var(--font-cond); font-weight:900; text-transform:uppercase; letter-spacing:.20em; }
+.nami-logo__sub  { font-family:var(--font-script); font-weight:400; letter-spacing:.02em; line-height:1.2; }
+.nami-logo--sm .nami-logo__name { font-size:.95rem; }
+.nami-logo--sm .nami-logo__sub  { font-size:.75rem; }
+.nami-logo--md .nami-logo__name { font-size:1.4rem; }
+.nami-logo--md .nami-logo__sub  { font-size:1.05rem; }
+.nami-logo--lg .nami-logo__name { font-size:2.2rem; }
+.nami-logo--lg .nami-logo__sub  { font-size:1.6rem; }
+.nami-logo--on-preto .nami-logo__name,
+.nami-logo--on-preto .nami-logo__sub { color:var(--nami-creme); }
+.nami-logo--on-creme .nami-logo__name,
+.nami-logo--on-creme .nami-logo__sub { color:var(--nami-preto); }
+
+/* ── Faixas diagonais (Nami strip) ── */
+.nami-strip {
+  height:48px;
+  background-color:var(--nami-preto);
+  background-image:repeating-linear-gradient(-55deg,var(--nami-laranja) 0px,var(--nami-laranja) 6px,transparent 6px,transparent 18px);
+  opacity:.75;
+}
+.nami-strip-local {
+  height:32px;
+  background-color:var(--nami-preto);
+  background-image:repeating-linear-gradient(-55deg,var(--nami-laranja) 0px,var(--nami-laranja) 6px,transparent 6px,transparent 18px);
+  opacity:.65;
+}
+
+/* ── Texturas de hero/seção ── */
+.nami-hero-grid::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:repeating-linear-gradient(to right,rgba(204,87,35,.07) 0px,rgba(204,87,35,.07) 2px,transparent 2px,transparent 56px);
+}
+.nami-hero-glow::after {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(ellipse 70% 45% at 50% 0%,rgba(204,87,35,.18),transparent 70%),
+             radial-gradient(ellipse 70% 30% at 50% 100%,rgba(13,6,0,.80),transparent 70%);
+}
+
+/* ── Animações ── */
+@keyframes nami-pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.6;transform:scale(.85);} }
+@keyframes nami-bounce { 0%,100%{transform:translateX(-50%) translateY(0);} 50%{transform:translateX(-50%) translateY(8px);} }
+@keyframes nami-in { from{opacity:0;transform:translateY(18px);} to{opacity:1;transform:translateY(0);} }
+.anim-in   { animation:nami-in .5s ease both; }
+.anim-in-1 { animation-delay:.08s; }
+.anim-in-2 { animation-delay:.16s; }
+.anim-in-3 { animation-delay:.26s; }
+.anim-in-4 { animation-delay:.36s; }
+.live-dot  { width:8px; height:8px; border-radius:50%; background:#4ade80; animation:nami-pulse 2s ease-in-out infinite; flex-shrink:0; }

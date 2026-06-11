@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import { IconEscudo } from "@/components/icons";
 import Badge from "@/components/ui/Badge";
 import GameCard from "./GameCard";
 import TournamentPredictions from "./TournamentPredictions";
@@ -130,36 +129,44 @@ export default async function PalpitesPage() {
   });
 
   return (
-    <main className="min-h-screen bg-[#1A1A1A]">
-      <div className="max-w-3xl mx-auto px-4 py-10">
-        <div className="flex items-center gap-4 mb-10">
-          <IconEscudo width={56} height={95} />
+    <main className="min-h-screen bg-[#1A0C04]">
+      {/* Page hero */}
+      <section className="relative bg-[#0D0600] px-6 py-10 border-b border-[#F0EADD]/10 overflow-hidden nami-hero-grid">
+        <div className="relative z-10 max-w-3xl mx-auto flex items-center gap-5">
           <div>
-            <h1 className="text-3xl font-bold text-[#F6C900] uppercase tracking-tight">
+            <h1 className="font-[var(--font-cond)] text-3xl md:text-4xl font-black text-[#F0EADD] uppercase tracking-tight">
               Meus Palpites
             </h1>
-            <p className="text-[#FAF6EB]/50 text-sm mt-1">
+            <p className="text-[#F0EADD]/55 text-sm mt-1">
               Envie seu palpite até 5 minutos antes de cada jogo
             </p>
           </div>
+          <img
+            src="/nami/nami-02.png"
+            alt=""
+            aria-hidden="true"
+            className="h-16 w-auto ml-auto opacity-20"
+            style={{ filter: "brightness(2)" }}
+          />
         </div>
+      </section>
 
-
+      <div className="max-w-3xl mx-auto px-4 py-10">
         {!dbUserId && (
-          <div className="border border-[#F6C900]/20 rounded-sm px-5 py-4 mb-8 text-[#FAF6EB]/70 text-sm">
-            <a href="/cadastro" className="text-[#F6C900] font-semibold underline underline-offset-2">
+          <div className="bg-[#F0EADD]/10 border border-[#F0EADD]/18 rounded-xl px-5 py-4 mb-8 text-[#F0EADD] text-sm">
+            <a href="/cadastro" className="text-[#F0EADD] font-bold underline underline-offset-2">
               Faça login
             </a>{" "}
-            para enviar palpites.
+            para enviar palpites e participar do bolão.
           </div>
         )}
 
         {/* ── PALPITES DO TORNEIO ── */}
         <div className="mb-10">
-          <h2 className="text-xl font-bold text-[#FAF6EB] uppercase tracking-tight mb-1">
+          <h2 className="font-[var(--font-cond)] text-xl font-black text-[#F0EADD] uppercase tracking-tight mb-1">
             Palpites do Torneio
           </h2>
-          <p className="text-[#FAF6EB]/40 text-sm mb-4">
+          <p className="text-[#F0EADD]/45 text-sm mb-4">
             Preencha semifinalistas, finalistas e campeão antes de enviar palpites de jogo.
           </p>
           <TournamentPredictions
@@ -171,10 +178,21 @@ export default async function PalpitesPage() {
 
 
         {/* ── JOGOS ── */}
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-[var(--font-cond)] text-xl font-black text-[#F0EADD] uppercase tracking-tight">
+            Jogos
+          </h2>
+          {regularGames.length > 0 && (
+            <Badge variant="green">
+              {regularGames.length} {regularGames.length === 1 ? "jogo" : "jogos"}
+            </Badge>
+          )}
+        </div>
+
         {regularGames.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center gap-4">
             <Badge variant="dark">Em breve</Badge>
-            <p className="text-[#FAF6EB]/50 text-lg">Nenhum jogo disponível.</p>
+            <p className="text-[#F0EADD]/50 text-lg">Nenhum jogo disponível.</p>
           </div>
         ) : (
           <div className="flex flex-col gap-4">
@@ -205,6 +223,11 @@ export default async function PalpitesPage() {
           </div>
         )}
       </div>
+
+      <div className="nami-strip-local" />
+      <footer className="bg-[#0D0600] py-8 px-6 text-center">
+        <p className="text-[#F0EADD]/32 text-xs">© 2026 Nami</p>
+      </footer>
     </main>
   );
 }

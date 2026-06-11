@@ -51,9 +51,9 @@ interface RankingTableProps {
 }
 
 const medalColors = [
-  "bg-[#F6C900] text-[#1A1A1A]",
-  "bg-[#C0C0C0] text-[#1A1A1A]",
-  "bg-[#CD7F32] text-[#FAF6EB]",
+  "bg-[#CC5723] text-white",
+  "bg-[#C0C0C0] text-[#1A0C04]",
+  "bg-[#CD7F32] text-[#F0EADD]",
 ];
 const medalEmojis = ["🥇", "🥈", "🥉"];
 
@@ -156,13 +156,13 @@ export default function RankingTable({ initialData, gameRankings }: RankingTable
   return (
     <div>
       {/* Tabs */}
-      <div className="flex border-b border-[#F6C900]/20 mb-8">
+      <div className="flex border-b border-[#CC5723]/20 mb-8">
         <button
           onClick={() => setTab("geral")}
           className={`px-5 py-2.5 text-sm font-bold border-b-2 transition-colors ${
             tab === "geral"
-              ? "border-[#F6C900] text-[#F6C900]"
-              : "border-transparent text-[#FAF6EB]/50 hover:text-[#FAF6EB]"
+              ? "border-[#CC5723] text-[#CC5723]"
+              : "border-transparent text-[#F0EADD]/50 hover:text-[#F0EADD]"
           }`}
         >
           Ranking Geral
@@ -172,8 +172,8 @@ export default function RankingTable({ initialData, gameRankings }: RankingTable
             onClick={() => setTab("jogo")}
             className={`px-5 py-2.5 text-sm font-bold border-b-2 transition-colors inline-flex items-center gap-1.5 ${
               tab === "jogo"
-                ? "border-[#F6C900] text-[#F6C900]"
-                : "border-transparent text-[#FAF6EB]/50 hover:text-[#FAF6EB]"
+                ? "border-[#CC5723] text-[#CC5723]"
+                : "border-transparent text-[#F0EADD]/50 hover:text-[#F0EADD]"
             }`}
           >
             Ranking por Jogo
@@ -190,20 +190,20 @@ export default function RankingTable({ initialData, gameRankings }: RankingTable
               {top3.map((row, i) => (
                 <div
                   key={row.user_id}
-                  className={`rounded-sm p-5 flex flex-col items-center gap-2 border ${
+                  className={`rounded-xl p-5 flex flex-col items-center gap-2 border ${
                     i === 0
-                      ? "border-[#F6C900] bg-[#F6C900]/10"
+                      ? "border-[#CC5723] bg-[#CC5723]/10"
                       : i === 1
                       ? "border-[#C0C0C0] bg-[#C0C0C0]/10"
                       : "border-[#CD7F32] bg-[#CD7F32]/10"
                   }`}
                 >
                   <span className="text-3xl">{medalEmojis[i]}</span>
-                  <span className="text-[#FAF6EB] font-bold text-lg text-center">
+                  <span className="text-[#F0EADD] font-bold text-lg text-center">
                     {maskName(row.user_name)}
                   </span>
-                  <span className={`text-2xl font-black ${
-                    i === 0 ? "text-[#F6C900]" : i === 1 ? "text-[#C0C0C0]" : "text-[#CD7F32]"
+                  <span className={`font-[var(--font-cond)] text-2xl font-black ${
+                    i === 0 ? "text-[#D96D3A]" : i === 1 ? "text-[#C0C0C0]" : "text-[#CD7F32]"
                   }`}>
                     {row.total_pts} pts
                   </span>
@@ -215,7 +215,7 @@ export default function RankingTable({ initialData, gameRankings }: RankingTable
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#F6C900]/20 text-[#FAF6EB]/50 text-xs uppercase tracking-wider">
+                <tr className="border-b border-[#CC5723]/20 text-[#F0EADD]/50 text-xs uppercase tracking-wider">
                   <th className="py-3 text-left w-10">#</th>
                   <th className="py-3 text-left">Participante</th>
                   <th className="py-3 text-right">Pontos</th>
@@ -227,7 +227,7 @@ export default function RankingTable({ initialData, gameRankings }: RankingTable
                   return (
                     <tr
                       key={row.user_id}
-                      className="border-b border-[#F6C900]/10 hover:bg-[#F6C900]/5 transition-colors"
+                      className="border-b border-[#CC5723]/10 hover:bg-[#CC5723]/5 transition-colors"
                     >
                       <td className="py-3.5">
                         {position <= 3 ? (
@@ -235,11 +235,11 @@ export default function RankingTable({ initialData, gameRankings }: RankingTable
                             {position}
                           </span>
                         ) : (
-                          <span className="text-[#FAF6EB]/40 font-mono text-xs pl-1">{position}</span>
+                          <span className="text-[#F0EADD]/40 font-mono text-xs pl-1">{position}</span>
                         )}
                       </td>
-                      <td className="py-3.5 text-[#FAF6EB] font-medium">{maskName(row.user_name)}</td>
-                      <td className="py-3.5 text-right text-[#F6C900] font-bold text-base">{row.total_pts}</td>
+                      <td className="py-3.5 text-[#F0EADD] font-medium">{maskName(row.user_name)}</td>
+                      <td className="py-3.5 text-right text-[#CC5723] font-bold text-base">{row.total_pts}</td>
                     </tr>
                   );
                 })}
@@ -256,7 +256,7 @@ export default function RankingTable({ initialData, gameRankings }: RankingTable
             <select
               value={selectedGame}
               onChange={(e) => setSelectedGame(e.target.value)}
-              className="mb-6 bg-[#252525] border border-[#F6C900]/20 text-[#FAF6EB] rounded-sm px-4 py-2 text-sm outline-none focus:border-[#F6C900]"
+              className="mb-6 bg-[#251008] border border-[#CC5723]/20 text-[#F0EADD] rounded-sm px-4 py-2 text-sm outline-none focus:border-[#CC5723]"
             >
               {gameRankings.map((g) => (
                 <option key={g.gameId} value={g.gameId}>{g.label}</option>
@@ -268,8 +268,8 @@ export default function RankingTable({ initialData, gameRankings }: RankingTable
             <>
               <div className="flex items-center gap-3 mb-6 flex-wrap">
                 <div className="flex flex-col gap-0.5">
-                  <h2 className="text-lg font-bold text-[#FAF6EB]">{currentGameRanking.label}</h2>
-                  <span className="text-[#FAF6EB]/40 text-xs">
+                  <h2 className="text-lg font-bold text-[#F0EADD]">{currentGameRanking.label}</h2>
+                  <span className="text-[#F0EADD]/40 text-xs">
                     {new Date(currentGameRanking.scheduledAt).toLocaleDateString("pt-BR", {
                       weekday: "short", day: "2-digit", month: "2-digit",
                     })}{" "}
@@ -282,7 +282,7 @@ export default function RankingTable({ initialData, gameRankings }: RankingTable
                 {currentGameRanking.home_score !== null ? (
                   <div className="flex flex-col items-start gap-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-[#F6C900] font-black text-xl">
+                      <span className="text-[#CC5723] font-black text-xl">
                         {currentGameRanking.home_score} × {currentGameRanking.away_score}
                       </span>
                       {currentGameRanking.isLive ? (
@@ -306,9 +306,9 @@ export default function RankingTable({ initialData, gameRankings }: RankingTable
                                  : null;
                       const pct  = hp > 50 ? hp : 100 - hp;
                       return (
-                        <span className="text-[#FAF6EB]/50 text-xs">
+                        <span className="text-[#F0EADD]/50 text-xs">
                           Posse de bola: {team ? `${team} ${pct}%` : "50% / 50%"}
-                          {currentGameRanking.isLive && <span className="text-[#FAF6EB]/30"> · ao vivo</span>}
+                          {currentGameRanking.isLive && <span className="text-[#F0EADD]/30"> · ao vivo</span>}
                         </span>
                       );
                     })()}
@@ -319,14 +319,14 @@ export default function RankingTable({ initialData, gameRankings }: RankingTable
               </div>
 
               {currentGameRanking.entries.length === 0 ? (
-                <p className="text-[#FAF6EB]/40 text-sm py-8 text-center">
+                <p className="text-[#F0EADD]/40 text-sm py-8 text-center">
                   Nenhum palpite registrado para este jogo ainda.
                 </p>
               ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-[#F6C900]/20 text-[#FAF6EB]/50 text-xs uppercase tracking-wider">
+                    <tr className="border-b border-[#CC5723]/20 text-[#F0EADD]/50 text-xs uppercase tracking-wider">
                       <th className="py-3 text-left w-10">#</th>
                       <th className="py-3 text-left">Participante</th>
                       <th className="py-3 text-center">Palpite</th>
@@ -339,7 +339,7 @@ export default function RankingTable({ initialData, gameRankings }: RankingTable
                     {currentGameRanking.entries.map((entry, idx) => (
                       <tr
                         key={entry.user_id}
-                        className="border-b border-[#F6C900]/10 hover:bg-[#F6C900]/5 transition-colors"
+                        className="border-b border-[#CC5723]/10 hover:bg-[#CC5723]/5 transition-colors"
                       >
                         <td className="py-3.5">
                           {idx < 3 ? (
@@ -355,32 +355,32 @@ export default function RankingTable({ initialData, gameRankings }: RankingTable
                               {idx + 1}
                             </span>
                           ) : (
-                            <span className="text-[#FAF6EB]/40 font-mono text-xs pl-1">{idx + 1}</span>
+                            <span className="text-[#F0EADD]/40 font-mono text-xs pl-1">{idx + 1}</span>
                           )}
                         </td>
-                        <td className="py-3.5 text-[#FAF6EB] font-medium">{maskName(entry.user_name)}</td>
-                        <td className="py-3.5 text-center font-bold text-[#FAF6EB]/80">
+                        <td className="py-3.5 text-[#F0EADD] font-medium">{maskName(entry.user_name)}</td>
+                        <td className="py-3.5 text-center font-bold text-[#F0EADD]/80">
                           {entry.home_pred} × {entry.away_pred}
                         </td>
-                        <td className="py-3.5 text-center text-[#FAF6EB]/70 text-xs">
+                        <td className="py-3.5 text-center text-[#F0EADD]/70 text-xs">
                           {possessionLabel(entry.possessionPred, currentGameRanking.homeTeam, currentGameRanking.awayTeam)}
                         </td>
                         <td className="py-3.5 text-center">
                           {entry.checkedIn ? (
                             <span className="text-green-400 font-bold text-xs uppercase">Sim</span>
                           ) : (
-                            <span className="text-[#FAF6EB]/30 font-bold text-xs uppercase">Não</span>
+                            <span className="text-[#F0EADD]/30 font-bold text-xs uppercase">Não</span>
                           )}
                         </td>
                         <td className="py-3.5 text-right">
                           {currentGameRanking.home_score === null ? (
-                            <span className="text-[#FAF6EB]/30 text-xs">Aguardando</span>
+                            <span className="text-[#F0EADD]/30 text-xs">Aguardando</span>
                           ) : (
                             <>
-                              <span className={`font-bold ${entry.pts > 0 ? "text-[#F6C900]" : "text-[#FAF6EB]/30"}`}>
+                              <span className={`font-bold ${entry.pts > 0 ? "text-[#CC5723]" : "text-[#F0EADD]/30"}`}>
                                 {entry.pts > 0 ? `+${entry.pts}` : "0"}
                               </span>
-                              <span className="text-[#FAF6EB]/30 text-xs ml-1">{ptsLabel(entry.pts)}</span>
+                              <span className="text-[#F0EADD]/30 text-xs ml-1">{ptsLabel(entry.pts)}</span>
                             </>
                           )}
                         </td>

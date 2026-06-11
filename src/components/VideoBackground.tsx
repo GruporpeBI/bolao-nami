@@ -12,7 +12,7 @@ export default function VideoBackground({ src = "/videos/hero.mp4" }: VideoBackg
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse 80% 60% at 50% 40%, #004600 0%, #002800 40%, #1A1A1A 100%)",
+            "radial-gradient(ellipse 80% 60% at 50% 40%, #3A1C0C 0%, #251008 40%, #1A0C04 100%)",
         }}
       />
 
@@ -21,7 +21,7 @@ export default function VideoBackground({ src = "/videos/hero.mp4" }: VideoBackg
         className="absolute inset-0 opacity-[0.06]"
         style={{
           backgroundImage:
-            "radial-gradient(circle, #F6C900 1px, transparent 1px)",
+            "radial-gradient(circle, #CC5723 1px, transparent 1px)",
           backgroundSize: "28px 28px",
         }}
       />
@@ -40,7 +40,7 @@ export default function VideoBackground({ src = "/videos/hero.mp4" }: VideoBackg
       </video>
 
       {/* Bottom vignette */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#1A1A1A]/30 via-transparent to-[#1A1A1A]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#1A0C04]/30 via-transparent to-[#1A0C04]" />
     </div>
   );
 }

@@ -137,7 +137,7 @@ export default function CadastroForm() {
 
     if (result.success) {
       setRegStatus("success");
-      setRegMessage("Cadastro realizado com sucesso! Bem-vindo ao Bolão Mercearia Amauri!");
+      setRegMessage("Cadastro realizado com sucesso! Bem-vindo ao Bolão Nami!");
     } else {
       setRegStatus("error");
       setRegMessage(result.error ?? "Erro ao realizar cadastro.");
@@ -148,14 +148,14 @@ export default function CadastroForm() {
   if (mode === "register" && regStatus === "success") {
     return (
       <div className="flex flex-col items-center gap-6 py-10 text-center">
-        <div className="w-16 h-16 rounded-full bg-[#004600] border-2 border-[#F6C900] flex items-center justify-center text-3xl text-[#F6C900]">
+        <div className="w-16 h-16 rounded-full bg-[#CC5723] border-2 border-[#CC5723] flex items-center justify-center text-3xl text-white">
           ✓
         </div>
-        <h2 className="text-2xl font-bold text-[#F6C900] uppercase tracking-tight">Cadastro confirmado!</h2>
-        <p className="text-[#FAF6EB]/70 max-w-sm">{regMessage}</p>
+        <h2 className="font-[var(--font-cond)] text-2xl font-black text-[#A84418] uppercase tracking-tight">Cadastro confirmado!</h2>
+        <p className="text-[#1A0C04]/70 max-w-sm">{regMessage}</p>
         <button
           onClick={() => router.push("/palpites")}
-          className="mt-2 bg-[#F6C900] hover:bg-[#e6b800] text-[#1A1A1A] font-bold px-8 py-3 rounded-sm text-sm uppercase tracking-wider transition-colors"
+          className="mt-2 bg-[#CC5723] hover:bg-[#D96D3A] text-white font-bold px-8 py-3 rounded-md text-sm uppercase tracking-wider transition-colors"
         >
           Fazer meus palpites
         </button>
@@ -177,7 +177,7 @@ export default function CadastroForm() {
       )}
 
       {/* ── Tab toggle ── */}
-      <div className="flex rounded-sm overflow-hidden border border-[#F6C900]/20 mb-6">
+      <div className="flex rounded-md overflow-hidden border border-[#DDD4C3] mb-6">
         {(["login", "register"] as Mode[]).map((m) => {
           const label = m === "login" ? "Entrar" : "Criar cadastro";
           const active = mode === m;
@@ -186,10 +186,10 @@ export default function CadastroForm() {
               key={m}
               type="button"
               onClick={() => switchMode(m)}
-              className={`flex-1 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors ${
+              className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${
                 active
-                  ? "bg-[#F6C900] text-[#1A1A1A]"
-                  : "bg-transparent text-[#FAF6EB]/50 hover:text-[#FAF6EB]/80"
+                  ? "bg-[#CC5723] text-white"
+                  : "bg-[#F8F4EC] text-[#1A0C04]/40 hover:bg-[#DDD4C3] hover:text-[#1A0C04]"
               }`}
             >
               {label}
@@ -204,13 +204,13 @@ export default function CadastroForm() {
       {mode === "login" && (
         <div className="flex flex-col gap-5">
           <div>
-            <p className="text-[#FAF6EB]/40 text-xs mb-4">
-              Digite seu CPF para acessar o bolão.
+            <p className="text-[#1A0C04]/45 text-xs mb-4">
+              Digite seu CPF para acessar o bolão. Nenhuma senha é necessária.
             </p>
 
             {/* Campo CPF */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-[#F6C900] uppercase tracking-wider">
+              <label className="text-xs font-bold text-[#A84418] uppercase tracking-[0.12em]">
                 CPF
               </label>
               <div className="relative">
@@ -221,60 +221,60 @@ export default function CadastroForm() {
                   onChange={(e) => setLoginCpf(formatCpf(e.target.value))}
                   placeholder="000.000.000-00"
                   disabled={loginStatus === "found"}
-                  className={`w-full bg-[#1A1A1A] border ${
+                  className={`w-full bg-[#F8F4EC] border-[1.5px] ${
                     loginStatus === "found"
-                      ? "border-green-500"
+                      ? "border-green-600"
                       : loginStatus === "not_found" || loginStatus === "error"
                       ? "border-red-500"
-                      : "border-[#F6C900]/30"
-                  } text-[#FAF6EB] rounded-sm px-4 py-3 pr-12 text-base outline-none focus:border-[#F6C900] transition-colors placeholder:text-[#FAF6EB]/30 disabled:opacity-70`}
+                      : "border-[#DDD4C3]"
+                  } text-[#0D0600] rounded-md px-4 py-3 pr-12 text-base outline-none focus:border-[#CC5723] focus:shadow-[0_0_0_3px_rgba(204,87,35,0.18)] transition-all placeholder:text-[#3A1C0C]/35 disabled:opacity-70`}
                 />
 
                 {/* Ícone de status à direita */}
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
                   {loginStatus === "checking" && (
-                    <svg className="animate-spin w-5 h-5 text-[#F6C900]/60" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin w-5 h-5 text-[#CC5723]/60" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
                     </svg>
                   )}
                   {loginStatus === "found" && (
-                    <span className="text-green-400 text-lg font-bold">✓</span>
+                    <span className="text-green-600 text-lg font-bold">✓</span>
                   )}
                   {(loginStatus === "not_found" || loginStatus === "error") && (
-                    <span className="text-red-400 text-lg font-bold">✕</span>
+                    <span className="text-red-500 text-lg font-bold">✕</span>
                   )}
                 </div>
               </div>
 
               {/* Mensagens de status */}
               {loginStatus === "not_found" && (
-                <p className="text-red-400 text-xs">
+                <p className="text-red-500 text-xs">
                   CPF não encontrado.{" "}
                   <button
                     type="button"
                     onClick={() => switchMode("register")}
-                    className="underline text-[#F6C900] hover:text-[#e6b800]"
+                    className="underline text-[#CC5723] hover:text-[#A84418]"
                   >
                     Criar cadastro
                   </button>
                 </p>
               )}
               {loginStatus === "error" && (
-                <p className="text-red-400 text-xs">{loginError}</p>
+                <p className="text-red-500 text-xs">{loginError}</p>
               )}
             </div>
 
             {/* Card de boas-vindas quando CPF encontrado */}
             {loginStatus === "found" && (
-              <div className="mt-4 bg-[#004600]/40 border border-green-500/40 rounded-sm px-4 py-3 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-green-500/20 border border-green-500/50 flex items-center justify-center text-green-400 text-sm font-bold shrink-0">
+              <div className="mt-4 bg-green-600/10 border border-green-600/40 rounded-md px-4 py-3 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-green-600/15 border border-green-600/50 flex items-center justify-center text-green-700 text-sm font-bold shrink-0">
                   ✓
                 </div>
                 <div>
-                  <p className="text-green-400 text-xs font-bold uppercase tracking-wide">CPF verificado</p>
+                  <p className="text-green-700 text-xs font-bold uppercase tracking-wide">CPF verificado</p>
                   {loginName && (
-                    <p className="text-[#FAF6EB] text-sm font-semibold mt-0.5">
+                    <p className="text-[#1A0C04] text-sm font-semibold mt-0.5">
                       Olá, {loginName.split(" ")[0]}! 👋
                     </p>
                   )}
@@ -296,7 +296,7 @@ export default function CadastroForm() {
           </Button>
 
           {loginStatus !== "found" && (
-            <p className="text-[#FAF6EB]/30 text-xs text-center -mt-2">
+            <p className="text-[#1A0C04]/30 text-xs text-center -mt-2">
               O botão será liberado após a verificação do CPF
             </p>
           )}
@@ -308,7 +308,7 @@ export default function CadastroForm() {
       ═══════════════════════════════════════ */}
       {mode === "register" && (
         <form onSubmit={handleRegister} className="flex flex-col gap-5">
-          <p className="text-[#FAF6EB]/40 text-xs -mt-2 mb-1">
+          <p className="text-[#1A0C04]/45 text-xs -mt-2 mb-1">
             Preencha seus dados para participar. Apenas maiores de 18 anos.
           </p>
 
@@ -366,17 +366,17 @@ export default function CadastroForm() {
                 checked={acceptedTerms}
                 onChange={(e) => setAcceptedTerms(e.target.checked)}
                 disabled={isRegLoading}
-                className="mt-0.5 w-4 h-4 accent-[#F6C900] cursor-pointer shrink-0"
+                className="mt-0.5 w-4 h-4 accent-[#CC5723] cursor-pointer shrink-0"
               />
-              <span className="text-sm text-[#FAF6EB]/70 leading-relaxed">
+              <span className="text-sm text-[#1A0C04]/65 leading-relaxed">
                 Li e aceito os{" "}
-                <a href="/termos" target="_blank" className="text-[#F6C900] underline underline-offset-2 hover:text-[#e6b800]">
+                <a href="/termos" target="_blank" className="text-[#CC5723] underline underline-offset-2 hover:text-[#A84418]">
                   termos e condições
                 </a>{" "}
-                do Bolão Copa 2026 — Mercearia Amauri.
+                do Bolão Copa 2026 — Nami.
               </span>
             </label>
-            {regErrors.terms && <span className="text-red-400 text-xs ml-7">{regErrors.terms}</span>}
+            {regErrors.terms && <span className="text-red-500 text-xs ml-7">{regErrors.terms}</span>}
           </div>
 
           <Button
@@ -390,7 +390,7 @@ export default function CadastroForm() {
           </Button>
 
           {regStatus === "error" && (
-            <p className="text-red-400 text-sm text-center">{regMessage}</p>
+            <p className="text-red-500 text-sm text-center">{regMessage}</p>
           )}
         </form>
       )}
