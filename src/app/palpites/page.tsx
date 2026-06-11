@@ -182,6 +182,8 @@ export default async function PalpitesPage() {
               const isPredictionDay = !!(game as { predictions_early?: boolean }).predictions_early || gameDayBrasilia(game.scheduled_at) === today;
               const isThisGameCheckedIn = alreadyCheckedIn && todayCheckinGame?.id === game.id;
               const checkinEnabled = !!(game as { checkin_enabled?: boolean }).checkin_enabled;
+              // Check-in vale no dia do jogo (não em predictions_early)
+              const isCheckInDay = checkinEnabled && gameDayBrasilia(game.scheduled_at) === today;
               return (
                 <GameCard
                   key={game.id}
@@ -192,7 +194,8 @@ export default async function PalpitesPage() {
                   isLoggedIn={!!dbUserId}
                   isPredictionDay={isPredictionDay}
                   alreadyCheckedIn={isThisGameCheckedIn}
-                  isGameDay={isPredictionDay && checkinEnabled}
+                  isGameDay={isCheckInDay}
+                  isOpen={predictionOpen(game)}
                   restaurantLat={locationConfig.lat}
                   restaurantLng={locationConfig.lng}
                   radiusM={locationConfig.radiusM}

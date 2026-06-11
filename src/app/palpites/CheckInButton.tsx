@@ -1,14 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { forwardRef, useImperativeHandle, useState } from "react";
 import { selfCheckIn } from "./actions";
+
+export interface CheckInHandle {
+  trigger: () => void;
+}
 
 interface CheckInButtonProps {
   gameId: string;
-  alreadyCheckedIn: boolean;
   restaurantLat: number;
   restaurantLng: number;
   radiusM: number;
+  alreadyCheckedIn?: boolean;
 }
 
 function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
@@ -22,13 +26,19 @@ function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number)
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-type Status = "idle" | "locating" | "checking" | "success" | "far" | "error" | "done";
+type Status = "idle" | "locating" | "checking" | "success" | "far" | "error";
 
-export default function CheckInButton({ gameId, alreadyCheckedIn, restaurantLat, restaurantLng, radiusM }: CheckInButtonProps) {
-  const [status, setStatus] = useState<Status>(alreadyCheckedIn ? "done" : "idle");
+const CheckInButton = forwardRef<CheckInHandle, CheckInButtonProps>(function CheckInButton(
+  { gameId, restaurantLat, restaurantLng, radiusM, alreadyCheckedIn = false },
+  ref
+) {
+  const [status, setStatus] = useState<Status>(alreadyCheckedIn ? "success" : "idle");
   const [message, setMessage] = useState("");
 
-  async function handleCheckIn() {
+  function handleCheckIn() {
+    // Evita disparo duplo (ex.: botão + envio de palpite ao mesmo tempo) e após concluído
+    if (status === "locating" || status === "checking" || status === "success") return;
+
     if (!navigator.geolocation) {
       setStatus("error");
       setMessage("Geolocalização não suportada neste dispositivo.");
@@ -36,7 +46,6 @@ export default function CheckInButton({ gameId, alreadyCheckedIn, restaurantLat,
     }
 
     setStatus("locating");
-
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const dist = haversineMeters(
@@ -45,19 +54,16 @@ export default function CheckInButton({ gameId, alreadyCheckedIn, restaurantLat,
           restaurantLat,
           restaurantLng
         );
-
         if (dist > radiusM) {
           setStatus("far");
           setMessage(`Você está a ${Math.round(dist)}m do restaurante. Precisa estar a menos de ${radiusM}m.`);
           return;
         }
-
         setStatus("checking");
         const result = await selfCheckIn(gameId);
-
         if (result.success) {
           setStatus("success");
-          setMessage("Presença registrada! +51 pontos no ranking.");
+          setMessage("");
         } else {
           setStatus("error");
           setMessage(result.error ?? "Erro ao registrar presença.");
@@ -65,62 +71,57 @@ export default function CheckInButton({ gameId, alreadyCheckedIn, restaurantLat,
       },
       (err) => {
         setStatus("error");
-        if (err.code === err.PERMISSION_DENIED) {
-          setMessage("Permissão de localização negada. Habilite nas configurações do browser.");
-        } else {
-          setMessage("Não foi possível obter sua localização. Tente novamente.");
-        }
+        setMessage(
+          err.code === err.PERMISSION_DENIED
+            ? "Permissão de localização negada. Habilite nas configurações do browser."
+            : "Não foi possível obter sua localização. Tente novamente."
+        );
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   }
 
-  if (status === "done" || status === "success") {
+  useImperativeHandle(ref, () => ({ trigger: handleCheckIn }), [status]);
+
+  // Concluído → selo fixo, sem botão
+  if (status === "success") {
     return (
-      <div className="flex items-center gap-3 bg-[#004600]/40 border border-green-500/30 rounded-sm px-4 py-3 mb-6">
-        <span className="text-green-400 text-xl">✓</span>
-        <div>
-          <p className="text-green-400 text-sm font-bold">Presença confirmada no Merça!</p>
-          {status === "success" && (
-            <p className="text-[#FAF6EB]/50 text-xs mt-0.5">{message}</p>
-          )}
-        </div>
+      <div className="border-t border-[#F6C900]/10 pt-4 mt-1 flex items-center gap-2">
+        <span className="text-green-400 text-lg">✓</span>
+        <span className="text-green-400 text-sm font-bold">
+          Sua presença foi confirmada, você ganhou pontos
+        </span>
       </div>
     );
   }
 
   return (
-    <div className="mb-6">
+    <div className="border-t border-[#F6C900]/10 pt-4 mt-1 flex flex-col gap-2">
       <button
+        type="button"
         onClick={handleCheckIn}
         disabled={status === "locating" || status === "checking"}
-        className="w-full bg-[#004600] hover:bg-[#005700] border border-green-500/40 text-[#F6C900] font-bold py-4 px-6 rounded-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3 text-base uppercase tracking-wider"
+        className="flex items-center justify-center gap-2 w-full border border-green-500/40 bg-[#004600] hover:bg-[#005700] text-[#F6C900] font-bold py-3 px-4 rounded-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed text-sm uppercase tracking-wider"
       >
-        {status === "locating" && (
-          <>
-            <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-            </svg>
-            Obtendo localização...
-          </>
-        )}
-        {status === "checking" && "Registrando presença..."}
-        {(status === "idle" || status === "far" || status === "error") && (
+        {status === "locating" ? (
+          "Obtendo localização..."
+        ) : status === "checking" ? (
+          "Registrando presença..."
+        ) : (
           <>
             <span>📍</span>
-            Estou no Merça!
+            Faça check-in para subir pontuação
           </>
         )}
       </button>
-
-      {(status === "far" || status === "error") && (
-        <p className="text-red-400 text-xs mt-2 text-center">{message}</p>
-      )}
-
-      <p className="text-[#FAF6EB]/30 text-xs text-center mt-2">
-        Confirme sua presença no restaurante durante o jogo para ganhar pontos.
+      <p className="text-[#FAF6EB]/30 text-xs text-center">
+        Check-in válido para presentes no restaurante
       </p>
+      {(status === "far" || status === "error") && (
+        <p className="text-red-400 text-xs text-center">{message}</p>
+      )}
     </div>
   );
-}
+});
+
+export default CheckInButton;

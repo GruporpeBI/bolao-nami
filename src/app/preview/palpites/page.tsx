@@ -74,16 +74,16 @@ export default function PalpitesPreviewPage() {
         {/* Seção de jogos */}
         <div className="flex flex-col gap-4 mb-12">
           {/* Jogo 1: aberto, sem palpite */}
-          <GameCard game={mockGames[0]} existingPrediction={null} hasTournamentPrediction={true} tournamentDeadlinePassed={false} isLoggedIn={true} isPredictionDay={true} alreadyCheckedIn={false} isGameDay={false} restaurantLat={0} restaurantLng={0} radiusM={400} />
+          <GameCard game={mockGames[0]} existingPrediction={null} hasTournamentPrediction={true} tournamentDeadlinePassed={false} isLoggedIn={true} isPredictionDay={true} isOpen={false} alreadyCheckedIn={false} isGameDay={false} restaurantLat={0} restaurantLng={0} radiusM={400} />
 
           {/* Jogo 2: aberto, com palpite já enviado */}
-          <GameCard game={mockGames[1]} existingPrediction={mockExistingPrediction} hasTournamentPrediction={true} tournamentDeadlinePassed={false} isLoggedIn={true} isPredictionDay={true} alreadyCheckedIn={false} isGameDay={false} restaurantLat={0} restaurantLng={0} radiusM={400} />
+          <GameCard game={mockGames[1]} existingPrediction={mockExistingPrediction} hasTournamentPrediction={true} tournamentDeadlinePassed={false} isLoggedIn={true} isPredictionDay={true} isOpen={false} alreadyCheckedIn={false} isGameDay={false} restaurantLat={0} restaurantLng={0} radiusM={400} />
 
           {/* Jogo 3: encerrado (data passada) */}
-          <GameCard game={mockGames[2]} existingPrediction={null} hasTournamentPrediction={true} tournamentDeadlinePassed={false} isLoggedIn={true} isPredictionDay={true} alreadyCheckedIn={false} isGameDay={false} restaurantLat={0} restaurantLng={0} radiusM={400} />
+          <GameCard game={mockGames[2]} existingPrediction={null} hasTournamentPrediction={true} tournamentDeadlinePassed={false} isLoggedIn={true} isPredictionDay={true} isOpen={false} alreadyCheckedIn={false} isGameDay={false} restaurantLat={0} restaurantLng={0} radiusM={400} />
 
           {/* Jogo 4: final, prazo futuro */}
-          <GameCard game={mockGames[3]} existingPrediction={null} hasTournamentPrediction={true} tournamentDeadlinePassed={false} isLoggedIn={true} isPredictionDay={true} alreadyCheckedIn={false} isGameDay={false} restaurantLat={0} restaurantLng={0} radiusM={400} />
+          <GameCard game={mockGames[3]} existingPrediction={null} hasTournamentPrediction={true} tournamentDeadlinePassed={false} isLoggedIn={true} isPredictionDay={true} isOpen={false} alreadyCheckedIn={false} isGameDay={false} restaurantLat={0} restaurantLng={0} radiusM={400} />
         </div>
 
         {/* Palpites do torneio */}

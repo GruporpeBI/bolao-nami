@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import CountdownTimer from "./CountdownTimer";
 import PredictionForm from "./PredictionForm";
+import CheckInButton, { type CheckInHandle } from "./CheckInButton";
 import { teamName, teamFlagUrl } from "@/lib/team-names";
 
 interface GameCardProps {
@@ -32,6 +33,7 @@ interface GameCardProps {
   isPredictionDay: boolean;
   alreadyCheckedIn: boolean;
   isGameDay: boolean;
+  isOpen: boolean;
   restaurantLat: number;
   restaurantLng: number;
   radiusM: number;
@@ -54,11 +56,13 @@ export default function GameCard({
   isPredictionDay,
   alreadyCheckedIn,
   isGameDay,
+  isOpen,
   restaurantLat,
   restaurantLng,
   radiusM,
 }: GameCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const checkInRef = useRef<CheckInHandle>(null);
 
   const homeTeam = teamName(game.home_team);
   const awayTeam = teamName(game.away_team);
@@ -68,6 +72,9 @@ export default function GameCard({
   const scheduledAt = new Date(game.scheduled_at);
   const deadline = new Date(scheduledAt.getTime() - 5 * 60 * 1000);
   const isPastDeadline = Date.now() >= deadline.getTime();
+  const gameStarted = Date.now() >= scheduledAt.getTime();
+  // Check-in disponível no dia do jogo até o kickoff (independe do palpite)
+  const checkInOpen = isGameDay && !gameStarted;
 
   const dateStr = scheduledAt.toLocaleDateString("pt-BR", {
     weekday: "short",
@@ -99,7 +106,10 @@ export default function GameCard({
   }
 
   return (
-    <Card variant="dark" className="p-5">
+    <Card
+      variant="dark"
+      className={`p-5 ${isOpen ? "ring-1 ring-[#F6C900]/70 border-[#F6C900]/60" : ""}`}
+    >
       <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
         <div className="flex items-center gap-2">
           <span className="text-[#FAF6EB]/50 text-xs uppercase tracking-wider">
@@ -227,7 +237,7 @@ export default function GameCard({
         </div>
       )}
 
-      {/* Formulário de palpite (jogos futuros) */}
+      {/* Formulário de palpite (jogos futuros) — enviar palpite também dispara o check-in */}
       {(expanded || (existingPrediction && !hasResult)) && !needsTournament && (
         <PredictionForm
           gameId={game.id}
@@ -235,12 +245,23 @@ export default function GameCard({
           awayTeam={awayTeam}
           disabled={isPastDeadline}
           existingPrediction={existingPrediction}
-          showCheckIn={isGameDay}
-          alreadyCheckedIn={alreadyCheckedIn}
-          restaurantLat={restaurantLat}
-          restaurantLng={restaurantLng}
-          radiusM={radiusM}
+          onSubmitted={() => checkInRef.current?.trigger()}
         />
+      )}
+
+      {/* Check-in standalone: disponível no dia do jogo até o kickoff,
+          independente do palpite (persiste após palpitar e após o prazo de 5 min) */}
+      {checkInOpen && (
+        <div className="mt-4">
+          <CheckInButton
+            ref={checkInRef}
+            gameId={game.id}
+            restaurantLat={restaurantLat}
+            restaurantLng={restaurantLng}
+            radiusM={radiusM}
+            alreadyCheckedIn={alreadyCheckedIn}
+          />
+        </div>
       )}
     </Card>
   );
