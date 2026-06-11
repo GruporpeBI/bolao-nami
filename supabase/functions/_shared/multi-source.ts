@@ -129,6 +129,25 @@ export function isFinishedStatus(status: string | null): boolean {
 }
 
 // ---------------------------------------------------------------------------
+// Posse via API-Football (fallback de posse no FT quando ESPN não traz)
+// ---------------------------------------------------------------------------
+
+async function fetchAfPossession(fixtureId: string): Promise<number | null> {
+  try {
+    const base = "https://v3.football.api-sports.io";
+    const stRes = await fetchAf(`${base}/fixtures/statistics?fixture=${fixtureId}`).then((r) => r.json());
+    const homeStats = (stRes.response?.[0]?.statistics ?? []) as Array<{ type: string; value: string }>;
+    const possEntry = homeStats.find((s) => s.type === "Ball Possession");
+    const afPoss    = possEntry?.value ? parseFloat(possEntry.value.replace("%", "")) : null;
+    // Posse válida = 1–99; 0/100/null = sem dado
+    return afPoss != null && afPoss > 0 && afPoss < 100 ? Math.round(afPoss) : null;
+  } catch (err) {
+    console.error("[compare] fetchAfPossession falhou:", err);
+    return null;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // compareAndFinalize — consensus logic
 // ---------------------------------------------------------------------------
 
@@ -155,24 +174,32 @@ export async function compareAndFinalize(
   const appUrl     = Deno.env.get("APP_URL") ?? "";
   const syncSecret = Deno.env.get("SYNC_SECRET") ?? "";
 
-  // home_possession é coluna INTEGER → arredondar (espn_possession é numérico, ex 61.5)
-  const espnPossInt = ml.espn_possession != null ? Math.round(ml.espn_possession) : null;
+  // home_possession é coluna INTEGER → arredondar. Posse válida = 1–99 (0/100 = sem dado).
+  const espnPossValid = ml.espn_possession != null && ml.espn_possession > 0 && ml.espn_possession < 100
+    ? Math.round(ml.espn_possession) : null;
 
   if (agree) {
+    // Posse no FT: ESPN (a "outra" fonte já foi consultada via ad-hoc) → senão API-Football.
+    // Se nenhuma trouxer posse, fica null → admin exibe "falha de API posse de bola".
+    let finalPoss = espnPossValid;
+    if (finalPoss == null && game.api_football_fixture_id) {
+      finalPoss = await fetchAfPossession(game.api_football_fixture_id);
+    }
+
     await supabase
       .from("match_latest")
       .update({
         home_score:      espnHome,
         away_score:      espnAway,
-        home_possession: espnPossInt,
-        consensus_status: "agreed",
+        home_possession: finalPoss,
+        consensus_status: finalPoss == null ? "agreed_sem_posse" : "agreed",
         final_confirmed:  true,
         updated_at:       new Date().toISOString(),
       })
       .eq("event_id", eventId);
 
-    await notifyApp(appUrl, syncSecret, game, espnHome, espnAway, espnPossInt);
-    console.log(`[compare] agreed: ${espnHome}-${espnAway}`);
+    await notifyApp(appUrl, syncSecret, game, espnHome, espnAway, finalPoss);
+    console.log(`[compare] agreed: ${espnHome}-${espnAway} poss=${finalPoss ?? "sem dado"}`);
     return "agreed";
   }
 
@@ -195,8 +222,8 @@ export async function compareAndFinalize(
       const afPoss    = possEntry?.value
         ? parseFloat(possEntry.value.replace("%", ""))
         : null;
-      // home_possession é INTEGER → arredondar (af_possession é numérico e fica cru)
-      const afPossInt = afPoss != null ? Math.round(afPoss) : null;
+      // home_possession é INTEGER → arredondar; posse válida = 1–99 (0/100 = sem dado)
+      const afPossInt = afPoss != null && afPoss > 0 && afPoss < 100 ? Math.round(afPoss) : null;
 
       const now = new Date().toISOString();
       await supabase

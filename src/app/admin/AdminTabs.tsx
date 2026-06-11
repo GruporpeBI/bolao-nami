@@ -24,6 +24,7 @@ interface Game {
   home_score: number | null;
   away_score: number | null;
   ball_possession_home: number | null;
+  status_type?:             string | null;
   result_locked?:           boolean;
   api_football_fixture_id?: string | null;
   espn_event_id?:           string | null;
@@ -206,6 +207,13 @@ export default function AdminTabs({ games, users, attendances, locationConfig }:
                       <span className="text-[#FAF6EB]/25 text-sm">Sem resultado</span>
                     )}
                   </div>
+
+                  {/* Falha de posse: jogo encerrado pela API mas sem posse → input manual */}
+                  {game.status_type === "finished" && game.ball_possession_home == null && (
+                    <p className="text-xs text-red-400 border border-red-500/30 bg-red-500/5 rounded-sm px-3 py-2 text-center">
+                      ⚠ Falha de API posse de bola — faça o input manual
+                    </p>
+                  )}
 
                   {/* Auto sync button — centered, full width */}
                   <AutoSyncButton
