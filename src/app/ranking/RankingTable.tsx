@@ -39,6 +39,7 @@ interface GameRanking {
   away_score: number | null;
   homeTeam: string;
   awayTeam: string;
+  ballPossessionHome: number | null;
   entries: GameRankingEntry[];
 }
 
@@ -259,12 +260,28 @@ export default function RankingTable({ initialData, gameRankings }: RankingTable
                   </span>
                 </div>
                 {currentGameRanking.home_score !== null ? (
-                  <>
-                    <span className="text-[#F6C900] font-black text-xl">
-                      {currentGameRanking.home_score} × {currentGameRanking.away_score}
-                    </span>
-                    <Badge variant="green">Resultado final</Badge>
-                  </>
+                  <div className="flex flex-col items-start gap-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[#F6C900] font-black text-xl">
+                        {currentGameRanking.home_score} × {currentGameRanking.away_score}
+                      </span>
+                      <Badge variant="green">Resultado final</Badge>
+                    </div>
+                    {(() => {
+                      const hp = currentGameRanking.ballPossessionHome;
+                      // 0/100/null = sem dado de posse → não exibe
+                      if (hp == null || hp <= 0 || hp >= 100) return null;
+                      const team = hp > 50 ? currentGameRanking.homeTeam
+                                 : hp < 50 ? currentGameRanking.awayTeam
+                                 : null;
+                      const pct  = hp > 50 ? hp : 100 - hp;
+                      return (
+                        <span className="text-[#FAF6EB]/50 text-xs">
+                          Posse de bola: {team ? `${team} ${pct}%` : "50% / 50%"}
+                        </span>
+                      );
+                    })()}
+                  </div>
                 ) : (
                   <Badge variant="dark">Aguardando resultado</Badge>
                 )}

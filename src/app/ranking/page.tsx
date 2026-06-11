@@ -40,6 +40,7 @@ interface GameRanking {
   away_score: number | null;
   homeTeam: string;
   awayTeam: string;
+  ballPossessionHome: number | null; // posse real do mandante (%) — fim de jogo
   entries: GameRankingEntry[];
 }
 
@@ -254,6 +255,7 @@ export default async function RankingPage() {
           away_score: game.away_score,
           homeTeam: teamName(game.home_team),
           awayTeam: teamName(game.away_team),
+          ballPossessionHome: game.ball_possession_home,
           entries,
         });
       }
