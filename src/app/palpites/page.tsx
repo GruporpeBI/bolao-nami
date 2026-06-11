@@ -4,6 +4,7 @@ import Badge from "@/components/ui/Badge";
 import GameCard from "./GameCard";
 import TournamentPredictions from "./TournamentPredictions";
 import { getLocationConfig } from "@/app/admin/actions";
+import { resolveDbUserId } from "@/lib/tenant";
 import type { Database } from "@/lib/supabase/types";
 
 type GameRow = Database["public"]["Tables"]["games"]["Row"];
@@ -24,10 +25,7 @@ function gameDayBrasilia(scheduledAt: string): string {
 export default async function PalpitesPage() {
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
-  const dbUserId: string | null = user
-    ? ((user.user_metadata?.users_table_id as string | undefined) ?? user.id)
-    : null;
+  const dbUserId: string | null = await resolveDbUserId(supabase);
 
   const { data: gamesData } = await supabase
     .from("games")

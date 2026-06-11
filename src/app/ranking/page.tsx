@@ -3,6 +3,7 @@ import { IconTacaJules } from "@/components/icons";
 import Badge from "@/components/ui/Badge";
 import RankingTable from "./RankingTable";
 import { teamName } from "@/lib/team-names";
+import { getTenantId } from "@/lib/tenant";
 
 export const revalidate = 30;
 
@@ -70,6 +71,7 @@ export default async function RankingPage() {
 
   try {
     const supabase = await createClient();
+    const tenant = getTenantId();
 
     // ── Ranking Geral: todos os usuários, top 10 ──
     type UserBasic = { id: string; name: string };
@@ -84,8 +86,8 @@ export default async function RankingPage() {
       { data: scoresRaw },
       { data: gamesWithPossRaw },
     ] = await Promise.all([
-      supabase.from("users").select("id, name"),
-      supabase.from("scores").select("user_id, attendance_pts, result_pts, exact_score_pts, tournament_pts, total_pts, updated_at"),
+      supabase.from("users").select("id, name").eq("tenant_id", tenant),
+      supabase.from("scores").select("user_id, attendance_pts, result_pts, exact_score_pts, tournament_pts, total_pts, updated_at").eq("tenant_id", tenant),
       supabase.from("games").select("id, ball_possession_home").eq("is_enabled", true as unknown as string).not("ball_possession_home", "is", null),
     ]);
     const allUsers = (allUsersRaw as UserBasic[] | null);
@@ -102,6 +104,7 @@ export default async function RankingPage() {
       const { data: allPossPredsRaw } = await supabase
         .from("predictions")
         .select("user_id, game_id, possession_pred")
+        .eq("tenant_id", tenant)
         .in("game_id", gamesWithPoss.map((g) => g.id));
 
       const gamePossMap = new Map(gamesWithPoss.map((g) => [g.id, g.ball_possession_home]));
@@ -184,6 +187,7 @@ export default async function RankingPage() {
         const { data: predsRaw } = await supabase
           .from("predictions")
           .select("user_id, home_score_pred, away_score_pred, possession_pred")
+          .eq("tenant_id", tenant)
           .eq("game_id", game.id);
         const preds = predsRaw as PredBasic[] | null;
 
@@ -196,6 +200,7 @@ export default async function RankingPage() {
         const { data: attsForGameRaw } = await supabase
           .from("attendances")
           .select("user_id")
+          .eq("tenant_id", tenant)
           .eq("game_id", game.id);
         for (const a of (attsForGameRaw as { user_id: string }[] | null ?? [])) {
           checkedInSet.add(a.user_id);

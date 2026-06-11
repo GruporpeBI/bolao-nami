@@ -5,6 +5,7 @@ import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import type { Database } from "@/lib/supabase/types";
 import { recalculateScores } from "@/app/admin/actions";
+import { getTenantId, resolveDbUserId } from "@/lib/tenant";
 
 type GameRow = Database["public"]["Tables"]["games"]["Row"];
 type PredictionInsert = Database["public"]["Tables"]["predictions"]["Insert"];
@@ -18,10 +19,8 @@ function getAdminClient() {
 }
 
 async function getDbUserId(supabase: Awaited<ReturnType<typeof createClient>>): Promise<string | null> {
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) return null;
-  // Usa o ID da tabela users armazenado no metadata; fallback para auth user id
-  return (user.user_metadata?.users_table_id as string | undefined) ?? user.id;
+  // Resolução robusta + scoped por tenant (auto-corrige metadata órfão pelo CPF)
+  return resolveDbUserId(supabase as unknown as Parameters<typeof resolveDbUserId>[0]);
 }
 
 export async function submitPrediction(
@@ -58,12 +57,13 @@ export async function submitPrediction(
     return { success: false, error: "O prazo para palpites deste jogo já encerrou." };
   }
 
-  const payload: PredictionInsert = {
+  const payload = {
     user_id: dbUserId,
     game_id: gameId,
     home_score_pred: homeScore,
     away_score_pred: awayScore,
     possession_pred: possession,
+    tenant_id: getTenantId(),
   };
 
   const { error: upsertError } = await (supabase
@@ -120,8 +120,9 @@ export async function submitTournamentPredictions(
     };
   }
 
-  const dbPayload: TournamentInsert = {
+  const dbPayload = {
     user_id: dbUserId,
+    tenant_id: getTenantId(),
     semi1: payload.semi1,
     semi2: payload.semi2,
     sf1_score_a: payload.sf1_score_a,
@@ -184,11 +185,11 @@ export async function selfCheckIn(
   const admin = getAdminClient();
   const { error } = await admin
     .from("attendances")
-    .insert({ user_id: dbUserId, game_id: gameId, verified_by: "geo" } as never);
+    .insert({ user_id: dbUserId, game_id: gameId, verified_by: "geo", tenant_id: getTenantId() } as never);
 
   if (error) return { success: false, error: "Erro ao registrar presença." };
 
-  await recalculateScores();
+  await recalculateScores(getTenantId());
   revalidatePath("/ranking");
   revalidatePath("/palpites");
   return { success: true };

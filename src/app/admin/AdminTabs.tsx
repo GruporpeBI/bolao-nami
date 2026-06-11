@@ -46,15 +46,29 @@ interface AdminTabsProps {
   users: UserRow[];
   attendances: AttendanceRow[];
   locationConfig: { lat: number; lng: number; radiusM: number };
+  isMaster: boolean;
 }
 
 type Tab = "games" | "results" | "attendances" | "localizacao";
 
-export default function AdminTabs({ games, users, attendances, locationConfig }: AdminTabsProps) {
-  const [tab, setTab] = useState<Tab>("games");
+export default function AdminTabs({ games, users, attendances, locationConfig, isMaster }: AdminTabsProps) {
+  // Abas COMPARTILHADAS (Jogos/Resultados) só com senha mestra
+  const [tab, setTab] = useState<Tab>(isMaster ? "games" : "attendances");
   const [recalcStatus, setRecalcStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [recalcMsg, setRecalcMsg] = useState("");
   const [checkingIn, setCheckingIn] = useState<string | null>(null);
+  const [masterPwd, setMasterPwd] = useState("");
+  const [masterMsg, setMasterMsg] = useState("");
+
+  async function handleMasterUnlock() {
+    const res = await fetch("/api/admin/master-unlock", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: masterPwd }),
+    });
+    if (res.ok) { window.location.reload(); }
+    else { const d = await res.json().catch(() => ({})); setMasterMsg(d.error ?? "Senha incorreta."); }
+  }
 
   const enabledGames = games.filter((g) => g.is_enabled);
   const attendanceSet = new Set(attendances.map((a) => `${a.user_id}:${a.game_id}`));
@@ -86,20 +100,44 @@ export default function AdminTabs({ games, users, attendances, locationConfig }:
 
   return (
     <div>
-      <div className="flex border-b border-[#F6C900]/20 mb-6">
-        <button className={tabClass("games")} onClick={() => setTab("games")}>
-          Jogos da Copa
-        </button>
-        <button className={tabClass("results")} onClick={() => setTab("results")}>
-          Resultados
-        </button>
+      <div className="flex flex-wrap items-center border-b border-[#F6C900]/20 mb-6">
+        {isMaster && (
+          <>
+            <button className={tabClass("games")} onClick={() => setTab("games")}>
+              Jogos da Copa
+            </button>
+            <button className={tabClass("results")} onClick={() => setTab("results")}>
+              Resultados
+            </button>
+          </>
+        )}
         <button className={tabClass("attendances")} onClick={() => setTab("attendances")}>
           Presenças
         </button>
         <button className={tabClass("localizacao")} onClick={() => setTab("localizacao")}>
           Localização
         </button>
+        {!isMaster && (
+          <div className="ml-auto flex items-center gap-2 py-1.5">
+            <input
+              type="password"
+              value={masterPwd}
+              onChange={(e) => setMasterPwd(e.target.value)}
+              placeholder="Senha mestra"
+              className="bg-[#1A1A1A] border border-[#F6C900]/30 text-[#FAF6EB] rounded-sm px-3 py-1.5 text-sm outline-none focus:border-[#F6C900] w-36"
+            />
+            <button
+              onClick={handleMasterUnlock}
+              className="text-xs font-bold text-[#F6C900] border border-[#F6C900]/40 rounded-sm px-3 py-1.5 hover:bg-[#F6C900]/10"
+            >
+              🔓 Jogos/Resultados
+            </button>
+          </div>
+        )}
       </div>
+      {!isMaster && masterMsg && (
+        <p className="text-red-400 text-xs mb-4">{masterMsg}</p>
+      )}
 
       {tab === "games" && (
         <div>
