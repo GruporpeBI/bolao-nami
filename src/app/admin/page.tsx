@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import { IconEscudo } from "@/components/icons";
 import AdminTabs from "./AdminTabs";
 import LogoutButton from "./LogoutButton";
 import { getLocationConfig } from "./actions";
@@ -55,9 +54,9 @@ export default async function AdminPage() {
     <main className="min-h-screen bg-[#1A1A1A]">
       <header className="border-b border-[#F6C900]/20 px-6 py-4">
         <div className="max-w-5xl mx-auto flex items-center gap-3">
-          <IconEscudo width={32} height={54} />
+          <img src="/nami/nami-13.png" alt="Nami" className="h-[54px] w-auto" />
           <div className="flex-1">
-            <p className="text-[#FAF6EB]/40 text-xs uppercase tracking-widest">Mercearia Amauri</p>
+            <p className="text-[#FAF6EB]/40 text-xs uppercase tracking-widest">Nami</p>
             <h1 className="text-[#F6C900] font-bold text-lg leading-tight">Painel Admin</h1>
           </div>
           <LogoutButton />
