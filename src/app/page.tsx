@@ -26,6 +26,7 @@ export default function HomePage() {
         <div className="relative z-10 flex flex-col items-center gap-5 max-w-2xl mx-auto">
           {/* Logo Nami */}
           <div className="nami-logo nami-logo--on-preto nami-logo--lg anim-in mb-1">
+            <img src="/nami/nami-13.png" alt="Nami" className="w-28 h-auto mb-2" />
             <span className="nami-logo__name">Nami</span>
             <span className="nami-logo__sub">Copa 2026</span>
           </div>
